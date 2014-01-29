@@ -9,39 +9,47 @@ import ErrorMsg.ErrorMsg;
 %char
 
 %{
-private void newline() {
+
+private void newline() 
+{
   errorMsg.newline(yychar);
 }
 
-private void err(int pos, String s) {
+private void err(int pos, String s) 
+{
   errorMsg.error(pos,s);
 }
 
-private void err(String s) {
+private void err(String s) '
+{
   err(yychar,s);
 }
 
-private java_cup.runtime.Symbol tok(int kind) {
+private java_cup.runtime.Symbol tok(int kind) 
+{
     return tok(kind, null);
 }
 
-private java_cup.runtime.Symbol tok(int kind, Object value) {
+private java_cup.runtime.Symbol tok(int kind, Object value) 
+{
     return new java_cup.runtime.Symbol(kind, yychar, yychar+yylength(), value);
 }
 
 private ErrorMsg errorMsg;
 
-Yylex(java.io.InputStream s, ErrorMsg e) {
+Yylex(java.io.InputStream s, ErrorMsg e) 
+{
   this(s);
   errorMsg=e;
 }
 
 %}
 
-%eofval{
+%eofval
+{
 	{
-	 return tok(sym.EOF, null);
-        }
+	  return tok(sym.EOF, null);
+  }
 %eofval}       
 
 //looking up some tokens...
