@@ -54,10 +54,12 @@ Yylex(java.io.InputStream s, ErrorMsg e)
 
 /*under construction
 regex testing: http://regexpal.com/
-----------------------------------------------
-identifier regex [a-zA-Z0-9_]*   <- not quite?
+---------------------------------------------------------
+identifier regex [a-zA-Z][a-zA-Z0-9_]* <- better solution
+first char letters only. second onward letter or number
+
 digits regex [0-9]+
-----------------------------------------------*/
+---------------------------------------------------------*/
 
 %%
 " "	{}
