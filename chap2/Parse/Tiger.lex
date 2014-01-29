@@ -49,4 +49,7 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 " "	{}
 \n	{newline();}
 ","	{return tok(sym.COMMA, null);}
+"=" {return tok(sym.EQ, null);}
+"(" {return tok(sym.LPAREN, null);}
+")" {return tok(sym.RPAREN, null);}
 . { err("Illegal character: " + yytext()); }
