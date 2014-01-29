@@ -52,13 +52,28 @@ Yylex(java.io.InputStream s, ErrorMsg e)
   }
 %eofval}       
 
-//looking up some tokens...
-//http://www2.hh.se/staff/vero/languages/03/lectures/lecture2.pdf
-//https://www.lrde.epita.fr/~akim/ccmp/tiger.html#Lexical-Specifications <-- better
+/*under construction
+regex testing: http://regexpal.com/
+----------------------------------------------
+identifier regex [a-zA-Z0-9_]*   <- not quite?
+digits regex [0-9]+
+----------------------------------------------*/
 
 %%
 " "	{}
 \n	{newline();}
+
+//TODO: COMMENTS
+
+//TODO: IDENTIFIERS
+
+//TODO: DIGITS
+
+//TODO: STRINGS
+
+//looking up some tokens...
+//http://www2.hh.se/staff/vero/languages/03/lectures/lecture2.pdf
+//https://www.lrde.epita.fr/~akim/ccmp/tiger.html#Lexical-Specifications <-- better
 
 //SYMBOLS
 ","	{return tok(sym.COMMA, null);}
