@@ -46,10 +46,13 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 
 //looking up some tokens...
 //http://www2.hh.se/staff/vero/languages/03/lectures/lecture2.pdf
+//https://www.lrde.epita.fr/~akim/ccmp/tiger.html#Lexical-Specifications <-- better
 
 %%
 " "	{}
 \n	{newline();}
+
+//SYMBOLS
 ","	{return tok(sym.COMMA, null);}
 ":" {return tok(sym.COLON, null);}
 ";" {return tok(sym.SEMICOLON, null);}
@@ -70,9 +73,35 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 "<=" {return tok(sym.LE, null);}
 ">" {return tok(sym.GT, null);}
 ">=" {return tok(sym.GE, null);}
-
-//uncertain
-"&&" {return tok(sym.AND, null);}
-"||" {return tok(sym.OR, null);}
+"&" {return tok(sym.AND, null);}
+"|" {return tok(sym.OR, null);}
 ":=" {return tok(sym.ASSIGN, null);}
+
+//KEYWORDS
+array {return tok(sym.ARRAY, null);}
+if {return tok(sym.IF, null);}
+then {return tok(sym.THEN, null);}
+else {return tok(sym.ELSE, null);}
+while {return tok(sym.WHILE, null);}
+for {return tok(sym.FOR, null);}
+to {return tok(sym.TO, null);}
+do {return tok(sym.DO, null);}
+let {return tok(sym.LET, null);}
+in {return tok(sym.IN, null);}
+end {return tok(sym.END, null);}
+of {return tok(sym.OF, null);}
+break {return tok(sym.BREAK, null);}
+nil {return tok(sym.NIL, null);}
+function {return tok(sym.FUNCTION, null);}
+var {return tok(sym.VAR, null);}
+type {return tok(sym.TYPE, null);}
+import {return tok(sym.IMPORT, null);}
+primitive {return tok(sym.PRIMITIVE, null);}
+
+//object extension
+class {return tok(sym.CLASS, null);}
+extends {return tok(sym.EXTENDS, null);}
+method {return tok(sym.METHOD, null);}
+new {return tok(sym.NEW, null);}
+
 . { err("Illegal character: " + yytext()); }
