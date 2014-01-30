@@ -45,8 +45,7 @@ Yylex(java.io.InputStream s, ErrorMsg e)
 
 %}
 
-%eofval
-{
+%eofval{
 	{
 	  return tok(sym.EOF, null);
   }
