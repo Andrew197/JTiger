@@ -51,14 +51,11 @@ Yylex(java.io.InputStream s, ErrorMsg e)
   }
 %eofval}       
 
-/*under construction
-regex testing: http://regexpal.com/
----------------------------------------------------------
+
 identifier regex [a-zA-Z][a-zA-Z0-9_]* <- better solution
 first char letters only. second onward letter or number
 
 digits regex [0-9]+
----------------------------------------------------------*/
 
 %%
 " "	{}
@@ -66,66 +63,60 @@ digits regex [0-9]+
 
 //TODO: COMMENTS
 
-//TODO: IDENTIFIERS
-
-//TODO: DIGITS
-
 //TODO: STRINGS
 
 //looking up some tokens...
 //http://www2.hh.se/staff/vero/languages/03/lectures/lecture2.pdf
 //https://www.lrde.epita.fr/~akim/ccmp/tiger.html#Lexical-Specifications <-- better
 
-//SYMBOLS
-","	{return tok(sym.COMMA, null);}
-":" {return tok(sym.COLON, null);}
-";" {return tok(sym.SEMICOLON, null);}
-"(" {return tok(sym.LPAREN, null);}
-")" {return tok(sym.RPAREN, null);}
-"[" {return tok(sym.LBRACK, null);}
-"]" {return tok(sym.RBRACK, null);}
-"{" {return tok(sym.LBRACE, null);}
-"}" {return tok(sym.RBRACE, null);}
-"." {return tok(sym.DOT, null);}
-"+" {return tok(sym.PLUS, null);}
-"-" {return tok(sym.MINUS, null);}
-"*" {return tok(sym.TIMES, null);}
-"\" {return tok(sym.DIVIDE, null);}
-"=" {return tok(sym.EQ, null);}
-"!=" {return tok(sym.NEQ, null);}
-"<" {return tok(sym.LT, null);}
-"<=" {return tok(sym.LE, null);}
-">" {return tok(sym.GT, null);}
-">=" {return tok(sym.GE, null);}
-"&" {return tok(sym.AND, null);}
-"|" {return tok(sym.OR, null);}
-":=" {return tok(sym.ASSIGN, null);}
+<YINITIAL> ","	{return tok(sym.COMMA, null);}
+<YINITIAL> ":" {return tok(sym.COLON, null);}
+<YINITIAL> ";" {return tok(sym.SEMICOLON, null);}
+<YINITIAL> "(" {return tok(sym.LPAREN, null);}
+<YINITIAL> ")" {return tok(sym.RPAREN, null);}
+<YINITIAL> "[" {return tok(sym.LBRACK, null);}
+<YINITIAL> "]" {return tok(sym.RBRACK, null);}
+<YINITIAL> "{" {return tok(sym.LBRACE, null);}
+<YINITIAL> "}" {return tok(sym.RBRACE, null);}
+<YINITIAL> "." {return tok(sym.DOT, null);}
+<YINITIAL> "+" {return tok(sym.PLUS, null);}
+<YINITIAL> "-" {return tok(sym.MINUS, null);}
+<YINITIAL> "*" {return tok(sym.TIMES, null);}
+<YINITIAL> "\" {return tok(sym.DIVIDE, null);}
+<YINITIAL> "=" {return tok(sym.EQ, null);}
+<YINITIAL> "!=" {return tok(sym.NEQ, null);}
+<YINITIAL> "<" {return tok(sym.LT, null);}
+<YINITIAL> "<=" {return tok(sym.LE, null);}
+<YINITIAL> ">" {return tok(sym.GT, null);}
+<YINITIAL> ">=" {return tok(sym.GE, null);}
+<YINITIAL> "&" {return tok(sym.AND, null);}
+<YINITIAL> "|" {return tok(sym.OR, null);}
+<YINITIAL> ":=" {return tok(sym.ASSIGN, null);}
 
 //KEYWORDS
-array {return tok(sym.ARRAY, null);}
-if {return tok(sym.IF, null);}
-then {return tok(sym.THEN, null);}
-else {return tok(sym.ELSE, null);}
-while {return tok(sym.WHILE, null);}
-for {return tok(sym.FOR, null);}
-to {return tok(sym.TO, null);}
-do {return tok(sym.DO, null);}
-let {return tok(sym.LET, null);}
-in {return tok(sym.IN, null);}
-end {return tok(sym.END, null);}
-of {return tok(sym.OF, null);}
-break {return tok(sym.BREAK, null);}
-nil {return tok(sym.NIL, null);}
-function {return tok(sym.FUNCTION, null);}
-var {return tok(sym.VAR, null);}
-type {return tok(sym.TYPE, null);}
-import {return tok(sym.IMPORT, null);}
-primitive {return tok(sym.PRIMITIVE, null);}
+<YINITIAL> array {return tok(sym.ARRAY, null);}
+<YINITIAL> if {return tok(sym.IF, null);}
+<YINITIAL> then {return tok(sym.THEN, null);}
+<YINITIAL> else {return tok(sym.ELSE, null);}
+<YINITIAL> while {return tok(sym.WHILE, null);}
+<YINITIAL> for {return tok(sym.FOR, null);}
+<YINITIAL> to {return tok(sym.TO, null);}
+<YINITIAL> do {return tok(sym.DO, null);}
+<YINITIAL> let {return tok(sym.LET, null);}
+<YINITIAL> in {return tok(sym.IN, null);}
+<YINITIAL> end {return tok(sym.END, null);}
+<YINITIAL> of {return tok(sym.OF, null);}
+<YINITIAL> break {return tok(sym.BREAK, null);}
+<YINITIAL> nil {return tok(sym.NIL, null);}
+<YINITIAL> function {return tok(sym.FUNCTION, null);}
+<YINITIAL> var {return tok(sym.VAR, null);}
+<YINITIAL> type {return tok(sym.TYPE, null);}
+<YINITIAL> import {return tok(sym.IMPORT, null);}
+<YINITIAL> primitive {return tok(sym.PRIMITIVE, null);}
 
-//object extension
-class {return tok(sym.CLASS, null);}
-extends {return tok(sym.EXTENDS, null);}
-method {return tok(sym.METHOD, null);}
-new {return tok(sym.NEW, null);}
+<YINITIAL> class {return tok(sym.CLASS, null);}
+<YINITIAL> extends {return tok(sym.EXTENDS, null);}
+<YINITIAL> method {return tok(sym.METHOD, null);}
+<YINITIAL> new {return tok(sym.NEW, null);}
 
 . { err("Illegal character: " + yytext()); }
