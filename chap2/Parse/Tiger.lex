@@ -11,7 +11,7 @@ import ErrorMsg.ErrorMsg;
 %{
 
 int commentLevel = 0;
-boolean insideString = false;
+String stringBuf = "";
 
 private void newline(){
   errorMsg.newline(yychar);
@@ -62,12 +62,13 @@ digits = [0-9]+
 \t {newline();}
 
 <YYINITIAL> "/*"  { commentLevel++; System.out.println("begin comment"); yybegin(COMMENT);}
-<YYINITIAL> "\"" { if (!insideString) { yybegin(STRING); insideString = true; } else { yybegin(YYINITIAL); insideString = false;} }
+<YYINITIAL> "\"" { System.out.println("STRING START"); yybegin(STRING); }
 
 <COMMENT> "*/"   { if(commentLevel == 1) yybegin(YYINITIAL); else commentLevel--;}
 <COMMENT> . { }
 
-<STRING> . { return tok(sym.STRING, null);}
+<STRING> "\"" { System.out.println("STRING END"); yybegin(YYINITIAL); String tempStringBuf = stringBuf; stringBuf = ""; return tok((sym.STRING), tempStringBuf);}
+<STRING> [\t-!|#-~]+ { System.out.println("adding " + yytext()); stringBuf += yytext(); }
 
 <YYINITIAL> ","	{return tok(sym.COMMA, null);}
 <YYINITIAL> ":" {return tok(sym.COLON, null);}
