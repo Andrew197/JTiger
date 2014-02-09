@@ -10,6 +10,9 @@ import ErrorMsg.ErrorMsg;
 
 %{
 
+int commentLevel = 0;
+boolean insideString = false;
+
 private void newline(){
   errorMsg.newline(yychar);
 }
@@ -49,13 +52,22 @@ Yylex(java.io.InputStream s, ErrorMsg e){
 id = [a-z|A-Z][a-z|A-Z|0-9|_]*
 digits = [0-9]+
 
-%state COMMENT
+%state COMMENT, STRING
 %%
 " "	{}
 \n	{newline();}
-<YYINITIAL> "/*"  { System.out.println("begin comment"); yybegin(COMMENT);}
-<COMMENT> "*/"   { yybegin(YYINITIAL); System.out.println("yyinitial begin");}
+\r  {newline();}
+\n\r {newline();}
+\r\n {newline();}
+\t {newline();}
+
+<YYINITIAL> "/*"  { commentLevel++; System.out.println("begin comment"); yybegin(COMMENT);}
+<YYINITIAL> "\"" { if (!insideString) { yybegin(STRING); insideString = true; } else { yybegin(YYINITIAL); insideString = false;} }
+
+<COMMENT> "*/"   { if(commentLevel == 1) yybegin(YYINITIAL); else commentLevel--;}
 <COMMENT> . { }
+
+<STRING> . { return tok(sym.STRING, null);}
 
 <YYINITIAL> ","	{return tok(sym.COMMA, null);}
 <YYINITIAL> ":" {return tok(sym.COLON, null);}
@@ -97,6 +109,7 @@ digits = [0-9]+
 <YYINITIAL> function {return tok(sym.FUNCTION, null);}
 <YYINITIAL> var {return tok(sym.VAR, null);}
 <YYINITIAL> type {return tok(sym.TYPE, null);}
-<YYINITIAL> {id}  { System.out.println("Identifier---------------------"); return tok(sym.ID, null);}
+<YYINITIAL> {id}  { return tok(sym.ID, yytext());}
+<YYINITIAL> {digits} { return tok(sym.INT, yytext());}
 . { err("Illegal character: " + yytext()); }
 
