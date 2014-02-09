@@ -46,12 +46,16 @@ Yylex(java.io.InputStream s, ErrorMsg e){
 %eofval}       
 
 
-id = [a-zA-Z][a-zA-Z0-9_]*
+id = [a-z|A-Z][a-z|A-Z|0-9|_]*
 digits = [0-9]+
 
+%state COMMENT
 %%
 " "	{}
 \n	{newline();}
+<YYINITIAL> "/*"  { System.out.println("begin comment"); yybegin(COMMENT);}
+<COMMENT> "*/"   { yybegin(YYINITIAL); System.out.println("yyinitial begin");}
+<COMMENT> . { }
 
 <YYINITIAL> ","	{return tok(sym.COMMA, null);}
 <YYINITIAL> ":" {return tok(sym.COLON, null);}
@@ -66,7 +70,7 @@ digits = [0-9]+
 <YYINITIAL> "+" {return tok(sym.PLUS, null);}
 <YYINITIAL> "-" {return tok(sym.MINUS, null);}
 <YYINITIAL> "*" {return tok(sym.TIMES, null);}
-<YYINITIAL> "\" {return tok(sym.DIVIDE, null);}
+<YYINITIAL> "/" {return tok(sym.DIVIDE, null);}
 <YYINITIAL> "=" {return tok(sym.EQ, null);}
 <YYINITIAL> "!=" {return tok(sym.NEQ, null);}
 <YYINITIAL> "<" {return tok(sym.LT, null);}
@@ -76,7 +80,6 @@ digits = [0-9]+
 <YYINITIAL> "&" {return tok(sym.AND, null);}
 <YYINITIAL> "|" {return tok(sym.OR, null);}
 <YYINITIAL> ":=" {return tok(sym.ASSIGN, null);}
-
 <YYINITIAL> array {return tok(sym.ARRAY, null);}
 <YYINITIAL> if {return tok(sym.IF, null);}
 <YYINITIAL> then {return tok(sym.THEN, null);}
@@ -94,13 +97,6 @@ digits = [0-9]+
 <YYINITIAL> function {return tok(sym.FUNCTION, null);}
 <YYINITIAL> var {return tok(sym.VAR, null);}
 <YYINITIAL> type {return tok(sym.TYPE, null);}
-<YYINITIAL> import {return tok(sym.IMPORT, null);}
-<YYINITIAL> primitive {return tok(sym.PRIMITIVE, null);}
-
-<YYINITIAL> class {return tok(sym.CLASS, null);}
-<YYINITIAL> extends {return tok(sym.EXTENDS, null);}
-<YYINITIAL> method {return tok(sym.METHOD, null);}
-<YYINITIAL> new {return tok(sym.NEW, null);}
-
+<YYINITIAL> {id}  { System.out.println("Identifier---------------------"); return tok(sym.ID, null);}
 . { err("Illegal character: " + yytext()); }
 
