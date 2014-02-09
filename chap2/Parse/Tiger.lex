@@ -64,6 +64,7 @@ digits = [0-9]+
 <YYINITIAL> "/*"  { commentLevel++; System.out.println("begin comment"); yybegin(COMMENT);}
 <YYINITIAL> "\"" { System.out.println("STRING START"); yybegin(STRING); }
 
+<COMMENT> "/*"  { commentLevel++; System.out.println("begin comment");}
 <COMMENT> "*/"   { if(commentLevel == 1) yybegin(YYINITIAL); else commentLevel--;}
 <COMMENT> . { }
 
