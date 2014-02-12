@@ -44,7 +44,14 @@ Yylex(java.io.InputStream s, ErrorMsg e){
 
 %eofval{
 	{
-	  return tok(sym.EOF, null);
+		//We need to ensure we don't hit EOF in the middle of a string or comment
+	  	if(commentLevel != 0 || !"".equals(stringBuf))
+	  		{
+	  			err("End of file hit in between a comment or string."); 
+	  			return tok(sym.EOF, null);
+	  		}
+	  	else 
+	  		return tok(sym.EOF, null);
   }
 %eofval}       
 
@@ -65,10 +72,11 @@ digits = [0-9]+
 <YYINITIAL> "\"" { System.out.println("STRING START"); yybegin(STRING); }
 
 <COMMENT> "/*"  { commentLevel++; System.out.println("begin comment");}
-<COMMENT> "*/"   { if(commentLevel == 1) yybegin(YYINITIAL); else commentLevel--;}
+<COMMENT> "*/"   { System.out.println("End of comment found. Comment level is now: " + (commentLevel-1));if(commentLevel == 1) {commentLevel=0;yybegin(YYINITIAL);} else commentLevel--;}
 <COMMENT> . { }
 
 <STRING> "\"" { System.out.println("STRING END"); yybegin(YYINITIAL); String tempStringBuf = stringBuf; stringBuf = ""; return tok((sym.STRING), tempStringBuf);}
+<STRING> \\[n|r|f|\s] {System.out.println("Link break in string not recorded.");}
 <STRING> [\t-!|#-~]+ { System.out.println("adding " + yytext()); stringBuf += yytext(); }
 
 <YYINITIAL> ","	{return tok(sym.COMMA, null);}
@@ -113,5 +121,7 @@ digits = [0-9]+
 <YYINITIAL> type {return tok(sym.TYPE, null);}
 <YYINITIAL> {id}  { return tok(sym.ID, yytext());}
 <YYINITIAL> {digits} { return tok(sym.INT, yytext());}
-. { err("Illegal character: " + yytext()); }
+. { if(Character.isISOControl(yytext().charAt(0)))
+	{System.out.println("Ignoring control key.");}
+	else err("Illegal character: " + (int)yytext().toCharArray()[0]); }
 

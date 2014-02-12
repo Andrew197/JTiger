@@ -1,0 +1,6 @@
+/* /*This is a file generated to handle lexical analysis of totally werid and 
+incorrect tiger source code. */ bacon */
+
+let
+	N := " This is a 
+werid  Stri...
