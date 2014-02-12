@@ -66,7 +66,7 @@ digits = [0-9]+
 \r  {newline();}
 \n\r {newline();}
 \r\n {newline();}
-\t {newline();}
+\t { }
 
 <YYINITIAL> "/*"  { commentLevel++; System.out.println("begin comment"); yybegin(COMMENT);}
 <YYINITIAL> "\"" { System.out.println("STRING START"); yybegin(STRING); }
@@ -76,8 +76,8 @@ digits = [0-9]+
 <COMMENT> . { }
 
 <STRING> "\"" { System.out.println("STRING END"); yybegin(YYINITIAL); String tempStringBuf = stringBuf; stringBuf = ""; return tok((sym.STRING), tempStringBuf);}
-<STRING> \\[n|r|f|\s] {System.out.println("Link break in string not recorded.");}
-<STRING> [\t-!|#-~]+ { System.out.println("adding " + yytext()); stringBuf += yytext(); }
+<STRING> \n {System.out.println("Link break in string recorded."); newline(); stringBuf += yytext();}
+<STRING> [^\"|^\n]+ { System.out.println("adding " + yytext()); stringBuf += yytext(); }
 
 <YYINITIAL> ","	{return tok(sym.COMMA, null);}
 <YYINITIAL> ":" {return tok(sym.COLON, null);}
