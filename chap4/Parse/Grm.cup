@@ -144,17 +144,17 @@ Exp ::= error:e
   Exp:l OR Exp:r
   {: RESULT = new Absyn.IfExp(lleft, l, new Absyn.IntExp(lleft, 1), r); :}
   |
-  IF Exp:exp1 THEN Exp:exp2 ELSE exp:exp3
+  IF Exp:Exp1 THEN Exp:Exp2 ELSE Exp:exp3
   {: RESULT = new Absyn.IfExp(exp1left, exp1, exp2, exp3); :}
   |
-  IF Exp:exp1 THEN Exp:exp2
+  IF Exp:Exp1 THEN Exp:Exp2
   {: RESULT = new Absyn.IfExp(exp1left, exp1, exp2); :}
   |
   //ASSIGN
   lvalue:l ASSIGN Exp:e
   {: RESULT = new Absyn.AssignExp(lleft, l, e); :}
   //FOR
-  FOR ID:s ASSIGN exp:exp1 TO exp:exp2 DO exp:exp3
+  FOR ID:s ASSIGN Exp:exp1 TO Exp:exp2 DO Exp:exp3
   {: RESULT = new Absyn.ForExp(sleft, new Absyn.VarDec(sleft, sym(s), null, exp1), exp2, exp3); :}
   ;
 
