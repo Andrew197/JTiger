@@ -61,13 +61,21 @@ precedence left DIVIDE;
 
 start with Exp;
 
-parser ::= 
-
+decList  ::=
+  {: RESULT = null; :}
+  |
+  decList:d decList:l
+  {: RESULT = new Absyn.DecList(d, l); :}
+  ;
 
 Exp ::= error:e
     {: RESULT = new Absyn.SeqExp(eleft, null); :}
   | Var:v
     {: RESULT = new Absyn.VarExp(vleft, v); :}
+  |
+  //LET
+  LET decList:l IN seq_exp:e END
+  {: RESULT = new Absyn.LetExp(lleft, l, new Absyn.SeqExp(eleft, e)); :}
   |
   //NIL
   NIL:i
