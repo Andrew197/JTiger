@@ -61,16 +61,64 @@ precedence left DIVIDE;
 
 start with Exp;
 
+parser ::= 
+
+
 Exp ::= error:e
-	  {: RESULT = new Absyn.SeqExp(eleft, null); :}
-	| Var:v
-	  {: RESULT = new Absyn.VarExp(vleft, v); :}
+    {: RESULT = new Absyn.SeqExp(eleft, null); :}
+  | Var:v
+    {: RESULT = new Absyn.VarExp(vleft, v); :}
+  |
+  //NIL
+  NIL:i
+  {: RESULT = new Absyn.NilExp(nleft; :}
+  |
+  //INT
+  INT:i
+  {: RESULT = new Absyn.IntExp(ileft, i.intValue()); :}
+  |
+  //STRINGS
+  STRING:s
+  {: RESULT = new Absyn.StringExp(sleft, s); :}
+  |
+  //OP-EXP
+  exp:l PLUS exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.PLUS, r);  :}
+  |
+  exp:l MINUS exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.MINUS, r);  :}
+  |
+  exp:l TIMES exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.MUL, r);  :}
+  |
+  exp:l DIVIDE exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.DIV, r);  :}
+  |
+  exp:l EQ exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.EQ, r);  :}
+  |
+  exp:l NEQ exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.NE, r);  :}
+  |
+  exp:l LT exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.LT, r);  :}
+  |
+    exp:l LE exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.LE, r);  :}
+  |
+  exp:l GT exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.GT, r);  :}
+  |
+  exp:l GE exp:r
+  {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.GE, r);  :}
   ;
 
+
 Var ::=  ID:n
-	  {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
+    {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
 
 
+/*
 //L-VALUES
 lvalue ::= ID:i
     {: RESULT = new Absyn.SimpleVar(ileft, sym(i)); :}
@@ -78,5 +126,5 @@ lvalue ::= ID:i
     {: RESULT = new Absyn.FieldVar(lleft, l, sym(i)); :}
   | lvalue:l LBRACK Exp:e RBRACK 
     {: RESULT = new Absyn.SubscriptVar(lleft, l, e; :}
-	;
+	;*/
 
