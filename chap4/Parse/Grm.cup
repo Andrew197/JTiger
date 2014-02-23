@@ -45,6 +45,7 @@ non terminal Absyn.Var            lvalue;
 non terminal Absyn.Dec            Dec, TyDec, VarDec;
 non terminal Absyn.Ty             Ty;
 non terminal Absyn.DecList        DecList;
+non terminal Absyn.ExpList        SequenceExp;
 //non terminal Absyn.ExpList        expression lists
 //non terminal Absyn.FieldExpList   field expression list
 //non terminal Absyn.FieldList      field list
@@ -74,7 +75,7 @@ Exp ::= error:e
     {: RESULT = new Absyn.VarExp(vleft, v); :}
   |
   //LET
-  LET DecList:l IN seq_exp:e END
+  LET DecList:l IN SequenceExp:e END
   {: RESULT = new Absyn.LetExp(lleft, l, new Absyn.SeqExp(eleft, e)); :}
   |
   //NIL
