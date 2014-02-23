@@ -5,7 +5,8 @@ action code {: static Symbol.Symbol sym(String s) {
 	        }
 	    :};
 
-parser code  {: 
+parser code  {:
+//public Absyn.Exp parseResult; 
   Lexer lexer;
 
   public void syntax_error(java_cup.runtime.Symbol current) {
@@ -18,6 +19,7 @@ parser code  {:
       errorMsg.error(info.left, message);
   }
 
+//grm = shorthand for grammar, I assume?
   public Grm(Lexer l, ErrorMsg.ErrorMsg err) {
     this();
     errorMsg=err;
@@ -25,8 +27,10 @@ parser code  {:
   }
 :};
 
+//preliminaries
 scan with {: return lexer.nextToken(); :};
 
+//Terminals (tokens returned by the scanner)
 terminal String ID, STRING;
 terminal Integer INT;
 terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK, 
@@ -34,8 +38,26 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
 	GT, GE, AND, OR, ASSIGN, ARRAY, IF, THEN, ELSE, WHILE, FOR, TO,
 	DO, LET, IN, END, OF, BREAK, NIL, FUNCTION, VAR, TYPE;
 
-non terminal Absyn.Exp          Exp;
-non terminal Absyn.Var          Var;
+//nonterminals
+non terminal Absyn.Exp            Exp;
+non terminal Absyn.Var            Var;
+non terminal Absyn.Var            lvalue;
+non terminal Absyn.Dec            Dec, TyDec, VarDec;
+non terminal Absyn.Ty             Ty;
+non terminal Absyn.DecList        DecList;
+non terminal Absyn.ExpList        //expression lists
+non terminal Absyn.FieldExpList   //field expression list
+non terminal Absyn.FieldList      //field list
+
+//precedence
+precedence left AND;
+precedence left OR;
+precedence left PLUS;
+precedence left MINUS;
+precedence left TIMES;
+precedence left DIVIDE;
+
+
 
 start with Exp;
 
@@ -43,8 +65,18 @@ Exp ::= error:e
 	  {: RESULT = new Absyn.SeqExp(eleft, null); :}
 	| Var:v
 	  {: RESULT = new Absyn.VarExp(vleft, v); :}
+  ;
+
+Var ::=  ID:n
+	  {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
+
+
+//L-VALUES
+lvalue :: ID:i
+    {: RESULT = new Absyn.SimpleVar(ileft, sym(i)); :}
+  | lvalue:l DOT ID:i
+    {: RESULT = new Absyn.FieldVar(lleft, l, sym(i)); :}
+  | lvalue:l LBRACK Exp:e RBRACK 
+    {: RESULT = new Absyn.SubscriptVar(lleft, l, e; :}
 	;
 
-Var ::=   ID:n
-	  {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
-	;
