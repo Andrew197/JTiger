@@ -45,7 +45,7 @@ non terminal Absyn.Var            Lvalue;
 non terminal Absyn.Dec            Dec, TyDec, VarDec;
 non terminal Absyn.Ty             Ty;
 non terminal Absyn.DecList        DecList;
-non terminal Absyn.ExpList        SequenceExp;
+non terminal Absyn.ExpList        SequenceExp, Arguments, ArgumentsRest;
 //non terminal Absyn.ExpList        expression lists
 non terminal Absyn.FieldExpList   SequenceField;
 //non terminal Absyn.FieldList      field list
@@ -83,7 +83,7 @@ Exp ::= error:e
   {: RESULT = new Absyn.SeqExp(seleft, se); :}
   |
   //CALL EXP
-  ID:i LPAREN args:expl RPAREN
+  ID:i LPAREN Arguments:expl RPAREN
   {: RESULT = new Absyn.CallExp(ileft, sym(i), expl); :}
   |
   //LET
@@ -163,6 +163,19 @@ Var ::=  ID:n
     {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
 ;
 
+Arguments  ::= 
+  {: RESULT = null; :}
+  |
+  ArgumentsRest:a /* um ou mais argumentos */
+  {: RESULT = a; :}
+  ;
+
+ArgumentsRest ::= Exp:e
+  {: RESULT = new Absyn.ExpList(e, null); :}
+  |
+  exp:e COMMA ArgumentsRest:ar
+  {: RESULT = new Absyn.ExpList(e, ar); :}
+  ;
 
 /*
 //L-VALUES
