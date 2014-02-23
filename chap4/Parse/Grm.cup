@@ -58,8 +58,6 @@ precedence left MINUS;
 precedence left TIMES;
 precedence left DIVIDE;
 
-
-
 start with Exp;
 
 DecList  ::=
@@ -67,6 +65,20 @@ DecList  ::=
   |
   DecList:d DecList:l
   {: RESULT = new Absyn.DecList(d, l); :}
+  ;
+
+Dec ::= TyDec:t
+  {: RESULT = (Absyn.Dec) t; :}
+  |
+  vardec:v
+  {: RESULT = (Absyn.Dec) v; :}
+  |
+  fundec:f
+  {: RESULT = (Absyn.Dec) f; :}
+  ;
+
+TyDec ::= TYPE ID:i EQ Ty:ty T:t
+  {: RESULT = new Absyn.TypeDec(ileft, sym(i), ty, (Absyn.TypeDec) t); :}
   ;
 
 Exp ::= error:e
@@ -174,7 +186,6 @@ Exp ::= error:e
   FOR ID:s ASSIGN Exp:exp1 TO Exp:exp2 DO Exp:exp3
   {: RESULT = new Absyn.ForExp(sleft, new Absyn.VarDec(sleft, sym(s), null, exp1), exp2, exp3); :}
   ;
-
 
 Var ::=  ID:n
     {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
