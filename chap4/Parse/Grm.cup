@@ -61,10 +61,10 @@ precedence left DIVIDE;
 
 start with Exp;
 
-decList  ::=
+DecList  ::=
   {: RESULT = null; :}
   |
-  decList:d decList:l
+  DecList:d DecList:l
   {: RESULT = new Absyn.DecList(d, l); :}
   ;
 
@@ -74,7 +74,7 @@ Exp ::= error:e
     {: RESULT = new Absyn.VarExp(vleft, v); :}
   |
   //LET
-  LET decList:l IN seq_exp:e END
+  LET DecList:l IN seq_exp:e END
   {: RESULT = new Absyn.LetExp(lleft, l, new Absyn.SeqExp(eleft, e)); :}
   |
   //NIL
