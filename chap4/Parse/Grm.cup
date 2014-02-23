@@ -151,7 +151,7 @@ Exp ::= error:e
   {: RESULT = new Absyn.IfExp(exp1left, exp1, exp2); :}
   |
   //ASSIGN
-  lvalue:l ASSIGN Exp:e
+  Lvalue:l ASSIGN Exp:e
   {: RESULT = new Absyn.AssignExp(lleft, l, e); :}
   //FOR
   FOR ID:s ASSIGN Exp:exp1 TO Exp:exp2 DO Exp:exp3
@@ -173,7 +173,7 @@ Arguments  ::=
 ArgumentsRest ::= Exp:e
   {: RESULT = new Absyn.ExpList(e, null); :}
   |
-  exp:e COMMA ArgumentsRest:ar
+  Exp:e COMMA ArgumentsRest:ar
   {: RESULT = new Absyn.ExpList(e, ar); :}
   ;
 
