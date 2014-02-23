@@ -47,7 +47,7 @@ non terminal Absyn.Ty             Ty;
 non terminal Absyn.DecList        DecList;
 non terminal Absyn.ExpList        SequenceExp;
 //non terminal Absyn.ExpList        expression lists
-non terminal Absyn.FieldExpList   SequenceField
+non terminal Absyn.FieldExpList   SequenceField;
 //non terminal Absyn.FieldList      field list
 
 //precedence
