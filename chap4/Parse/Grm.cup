@@ -41,13 +41,13 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
 //nonterminals
 non terminal Absyn.Exp            Exp;
 non terminal Absyn.Var            Var;
-non terminal Absyn.Var            lvalue;
+non terminal Absyn.Var            Lvalue;
 non terminal Absyn.Dec            Dec, TyDec, VarDec;
 non terminal Absyn.Ty             Ty;
 non terminal Absyn.DecList        DecList;
 non terminal Absyn.ExpList        SequenceExp;
 //non terminal Absyn.ExpList        expression lists
-//non terminal Absyn.FieldExpList   field expression list
+non terminal Absyn.FieldExpList   SequenceField
 //non terminal Absyn.FieldList      field list
 
 //precedence
@@ -74,9 +74,25 @@ Exp ::= error:e
   | Var:v
     {: RESULT = new Absyn.VarExp(vleft, v); :}
   |
+  //LVALUE
+  Lvalue:l
+  {: RESULT = new Absyn.VarExp(lleft, v); :}
+  |
+  //SEQUENCE EXP
+  LPAREN SequenceExp:se RPAREN
+  {: RESULT = new Absyn.SeqExp(seleft, se); :}
+  |
+  //CALL EXP
+  ID:i LPAREN args:expl RPAREN
+  {: RESULT = new Absyn.CallExp(ileft, sym(i), expl); :}
+  |
   //LET
   LET DecList:l IN SequenceExp:e END
   {: RESULT = new Absyn.LetExp(lleft, l, new Absyn.SeqExp(eleft, e)); :}
+  |
+  //RecordEXP
+  ID:s LBRACE SequenceField:sf RBRACE
+  {: RESULT = new Absyn.RecordExp(sleft, sym(s), ); :}
   |
   //NIL
   NIL:i
@@ -120,6 +136,26 @@ Exp ::= error:e
   |
   Exp:l GE Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.GE, r);  :}
+  |
+  //IF EXP
+  Exp:l AND Exp:r
+  {: RESULT = new Absyn.IfExp(lleft, l, r, new Absyn.IntExp(lleft, 0)); :}
+  |
+  Exp:l OR Exp:r
+  {: RESULT = new Absyn.IfExp(lleft, l, new Absyn.IntExp(lleft, 1), r); :}
+  |
+  IF Exp:exp1 THEN Exp:exp2 ELSE exp:exp3
+  {: RESULT = new Absyn.IfExp(exp1left, exp1, exp2, exp3); :}
+  |
+  IF Exp:exp1 THEN Exp:exp2
+  {: RESULT = new Absyn.IfExp(exp1left, exp1, exp2); :}
+  |
+  //ASSIGN
+  lvalue:l ASSIGN Exp:e
+  {: RESULT = new Absyn.AssignExp(lleft, l, e); :}
+  //FOR
+  FOR ID:s ASSIGN exp:exp1 TO exp:exp2 DO exp:exp3
+  {: RESULT = new Absyn.ForExp(sleft, new Absyn.VarDec(sleft, sym(s), null, exp1), exp2, exp3); :}
   ;
 
 
