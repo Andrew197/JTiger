@@ -91,34 +91,34 @@ Exp ::= error:e
   {: RESULT = new Absyn.StringExp(sleft, s); :}
   |
   //OP-EXP
-  exp:l PLUS exp:r
+  Exp:l PLUS Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.PLUS, r);  :}
   |
-  exp:l MINUS exp:r
+  Exp:l MINUS Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.MINUS, r);  :}
   |
-  exp:l TIMES exp:r
+  Exp:l TIMES Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.MUL, r);  :}
   |
-  exp:l DIVIDE exp:r
+  Exp:l DIVIDE Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.DIV, r);  :}
   |
-  exp:l EQ exp:r
+  Exp:l EQ Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.EQ, r);  :}
   |
-  exp:l NEQ exp:r
+  Exp:l NEQ Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.NE, r);  :}
   |
-  exp:l LT exp:r
+  Exp:l LT Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.LT, r);  :}
   |
-    exp:l LE exp:r
+    Exp:l LE Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.LE, r);  :}
   |
-  exp:l GT exp:r
+  Exp:l GT Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.GT, r);  :}
   |
-  exp:l GE exp:r
+  Exp:l GE Exp:r
   {: RESULT = new Absyn.OpExp(lleft, l, Absyn.OpExp.GE, r);  :}
   ;
 
