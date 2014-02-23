@@ -125,6 +125,7 @@ Exp ::= error:e
 
 Var ::=  ID:n
     {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
+;
 
 
 /*
