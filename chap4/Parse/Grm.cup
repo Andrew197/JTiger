@@ -150,9 +150,26 @@ Exp ::= error:e
   IF Exp:Exp1 THEN Exp:Exp2
   {: RESULT = new Absyn.IfExp(exp1left, exp1, exp2); :}
   |
+  //ARRAYEXP
+  ID:i LBRACK Exp:exp1 RBRACK OF Exp:exp2
+  {: RESULT = new Absyn.ArrayExp(ileft, sym(i), exp1, exp2); :}
+  |
+  //CALLEXP
+  ID:i LPAREN args:expl RPAREN
+  {: RESULT = new Absyn.CallExp(ileft, sym(i), expl); :}
+  |
+  //BREAKEXP
+  BREAK:b
+  {: RESULT = new Absyn.BreakExp(bleft); :}
+  |
   //ASSIGN
   Lvalue:l ASSIGN Exp:e
   {: RESULT = new Absyn.AssignExp(lleft, l, e); :}
+  |
+  //WHILE
+  WHILE Exp:exp1 DO Exp:exp2
+  {: RESULT = new Absyn.WhileExp(exp1left, exp1, exp2); :}
+  |
   //FOR
   FOR ID:s ASSIGN Exp:exp1 TO Exp:exp2 DO Exp:exp3
   {: RESULT = new Absyn.ForExp(sleft, new Absyn.VarDec(sleft, sym(s), null, exp1), exp2, exp3); :}
