@@ -70,7 +70,7 @@ DecList  ::=
 Dec ::= TyDec:t
   {: RESULT = (Absyn.Dec) t; :}
   |
-  Vardec:v
+  VarDec:v
   {: RESULT = (Absyn.Dec) v; :}
   |
   fundec:f
