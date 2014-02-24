@@ -240,7 +240,7 @@ ArgumentsRest ::= Exp:e
 //L-VALUES
 Lvalue ::= ID:i
     {: RESULT = new Absyn.SimpleVar(ileft, sym(i)); :}
-  | lvalue:l DOT ID:i
+  | Lvalue:l DOT ID:i
     {: RESULT = new Absyn.FieldVar(lleft, l, sym(i)); :}
   | lvalue:l LBRACK Exp:e RBRACK 
     {: RESULT = new Absyn.SubscriptVar(lleft, l, e; :}
