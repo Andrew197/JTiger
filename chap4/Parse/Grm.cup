@@ -60,10 +60,7 @@ precedence left DIVIDE;
 
 start with Exp;
 
-DecList  ::=
-  {: RESULT = null; :}
-  |
-  DecList:d DecList:l
+DecList  ::= DecList:d DecList:l
   {: RESULT = new Absyn.DecList(d, l); :}
   ;
 
@@ -115,9 +112,6 @@ TyListRest ::= ID:i1 COLON ID:i2
 
 Exp ::= error:e
     {: RESULT = new Absyn.SeqExp(eleft, null); :}
-  | Var:v
-    {: RESULT = new Absyn.VarExp(vleft, v); :}
-  |
   //LVALUE
   Lvalue:l
   {: RESULT = new Absyn.VarExp(lleft, v); :}
@@ -126,21 +120,17 @@ Exp ::= error:e
   LPAREN Exp_List:se RPAREN
   {: RESULT = new Absyn.SeqExp(seleft, se); :}
   |
-  //CALL EXP
-  ID:i LPAREN Arguments:expl RPAREN
-  {: RESULT = new Absyn.CallExp(ileft, sym(i), expl); :}
-  |
   //LET
   LET DecList:l IN Exp_List:e END
   {: RESULT = new Absyn.LetExp(lleft, l, new Absyn.SeqExp(eleft, e)); :}
   |
   //RecordEXP
   ID:s LBRACE FieldExp_List:sf RBRACE
-  {: RESULT = new Absyn.RecordExp(sleft, sym(s), ); :}
+  {: RESULT = new Absyn.RecordExp(sleft, sym(s)); :}
   |
   //NIL
   NIL:i
-  {: RESULT = new Absyn.NilExp(nleft; :}
+  {: RESULT = new Absyn.NilExp(nleft); :}
   |
   //INT
   INT:i
@@ -221,7 +211,7 @@ Exp ::= error:e
 
 Var ::=  ID:n
     {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
-	;
+  ;
 
 Arguments  ::= 
   {: RESULT = null; :}
@@ -238,12 +228,12 @@ ArgumentsRest ::= Exp:e
   ;
 
 //L-VALUES
-Lvalue ::= ID:i
+Lvalue ::= Var:i
     {: RESULT = new Absyn.SimpleVar(ileft, sym(i)); :}
   | Lvalue:l DOT ID:i
     {: RESULT = new Absyn.FieldVar(lleft, l, sym(i)); :}
   | Lvalue:l LBRACK Exp:e RBRACK 
-    {: RESULT = new Absyn.SubscriptVar(lleft, l, e; :}
+    {: RESULT = new Absyn.SubscriptVar(lleft, l, e); :}
 	;
 
 //field EXP list
