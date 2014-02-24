@@ -73,7 +73,7 @@ Dec ::= TyDec:t
   VarDec:v
   {: RESULT = (Absyn.Dec) v; :}
   |
-  fundec:f
+  Function_Dec:f
   {: RESULT = (Absyn.Dec) f; :}
   ;
 
