@@ -40,12 +40,11 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
 
 //nonterminals
 non terminal Absyn.Exp            Exp;
-non terminal Absyn.Var            Var;
-non terminal Absyn.Var            Lvalue;
-non terminal Absyn.Dec            Dec, TyDec, VarDec;
+non terminal Absyn.Var            Var, Lvalue;
+non terminal Absyn.Dec            Dec, TyDec, TyDec_rest, VarDec;
 non terminal Absyn.Ty             Ty;
 non terminal Absyn.DecList        DecList;
-non terminal Absyn.ExpList        Exp_List, Arguments, ArgumentsRest;
+non terminal Absyn.ExpList        Exp_List, Exp_List_Rest, Arguments, ArgumentsRest;
 non terminal Absyn.FieldExpList   FieldExp_List, FieldExp_List_Rest;
 non terminal Absyn.FieldList      TyList, TyListRest;
 non terminal Absyn.FunctionDec    Function_Dec;
@@ -78,8 +77,16 @@ Dec ::= TyDec:t
   {: RESULT = (Absyn.Dec) f; :}
   ;
 
-TyDec ::= TYPE ID:i EQ Ty:ty T:t
-  {: RESULT = new Absyn.TypeDec(ileft, sym(i), ty, (Absyn.TypeDec) t); :}
+TyDec ::= TYPE ID:i EQ Ty:ty TyDec_rest:tr
+  {: RESULT = new Absyn.TypeDec(ileft, sym(i), ty, (Absyn.TypeDec) tr); :}
+  ;
+
+TyDec_rest ::=
+  //empty
+  {: RESULT = null; :}
+  |
+  tydec:t
+  {: RESULT = t; :}
   ;
 
 Ty  ::= ID:i
