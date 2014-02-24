@@ -199,7 +199,7 @@ Exp ::= error:e
   {: RESULT = new Absyn.ArrayExp(ileft, sym(i), exp1, exp2); :}
   |
   //CALLEXP
-  ID:i LPAREN args:expl RPAREN
+  ID:i LPAREN Arguments:expl RPAREN
   {: RESULT = new Absyn.CallExp(ileft, sym(i), expl); :}
   |
   //BREAKEXP
@@ -221,7 +221,7 @@ Exp ::= error:e
 
 Var ::=  ID:n
     {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
-;
+	;
 
 Arguments  ::= 
   {: RESULT = null; :}
