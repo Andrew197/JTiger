@@ -81,6 +81,31 @@ TyDec ::= TYPE ID:i EQ Ty:ty T:t
   {: RESULT = new Absyn.TypeDec(ileft, sym(i), ty, (Absyn.TypeDec) t); :}
   ;
 
+Ty  ::= ID:i
+  {: RESULT = new Absyn.NameTy(ileft, sym(i)); :}
+  |
+  LBRACE TyList:l RBRACE
+  {: RESULT = new Absyn.RecordTy(lleft, l); :}
+  |
+  ARRAY OF ID:a
+  {: RESULT = new Absyn.ArrayTy(aleft, sym(a)); :}
+  ;
+
+TyList ::=
+  {: RESULT = null; :}
+  |
+  TyListRest:t
+  {: RESULT = t; :}
+  ;
+
+TyListRest ::= ID:i1 COLON ID:i2
+  {: RESULT = new Absyn.FieldList(i1left, sym(i1), sym(i2), null); :}
+  |
+  ID:i1 COLON ID:i2 COMMA TyListRest:tlr
+  {: RESULT = new Absyn.FieldList(i1left, sym(i1), sym(i2), tlr); :}
+  ;
+
+
 Exp ::= error:e
     {: RESULT = new Absyn.SeqExp(eleft, null); :}
   | Var:v
