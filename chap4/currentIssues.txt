@@ -1,0 +1,23 @@
+::::CURRENT ISSUES::::
+
+Reduce/Reduces:
+	(Clear for now)
+
+Shift/Reduces: (May include MANY more SIMILAR issues.)
+	State 62: between Exp ::= ID LBRACK Exp RBRACK OF Exp (*) and Exp ::= Exp (*) EQ Exp
+	State 81: between Exp ::= Lvalue ASSIGN Exp (*) and Exp ::= Exp (*) EQ Exp
+	State 33: between Exp ::= Exp LT Exp (*) and Exp ::= Exp (*) EQ Exp
+	State 36: between Exp ::= Exp GT Exp (*) and Exp ::= Exp (*) EQ Exp
+	State 45: between DecList ::= (*) and Exp ::= LET DecList (*) IN Exp_List END
+	State 41: between Exp ::= Exp GE Exp (*) and  Exp ::= Exp (*) EQ Exp
+	State 93: between Exp ::= WHILE Exp DO Exp (*) and Exp ::= Exp (*) EQ Exp
+	State 75: between Exp ::= IF Exp THEN Exp ELSE Exp (*) and Exp ::= Exp (*) NEQ Exp
+	State 73: between Exp ::= IF Exp THEN Exp (*) and Exp ::= Exp (*) EQ Exp
+	State 37: between Exp ::= Exp LE Exp (*) and Exp ::= Exp (*) EQ Exp
+	State 39: between Exp ::= Exp EQ Exp (*) and Exp ::= Exp (*) EQ Exp
+	State 40: between Exp ::= Exp NEQ Exp (*) and Exp ::= Exp (*) NEQ Exp
+	State 90: between Exp ::= FOR ID ASSIGN Exp TO Exp DO Exp (*) and Exp ::= Exp (*) EQ Exp
+
+
+What are LValues? And why are they different from Vars? Because state 9's
+issue is more legit.
