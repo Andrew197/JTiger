@@ -45,7 +45,7 @@ non terminal Absyn.Var            Lvalue;
 non terminal Absyn.Dec            Dec, TyDec, VarDec;
 non terminal Absyn.Ty             Ty;
 non terminal Absyn.DecList        DecList;
-non terminal Absyn.ExpList        SequenceExp, Arguments, ArgumentsRest;
+non terminal Absyn.ExpList        Exp_List, Arguments, ArgumentsRest;
 non terminal Absyn.FieldExpList   FieldExp_List, FieldExp_List_Rest;
 //non terminal Absyn.FieldList      field list
 
@@ -114,7 +114,7 @@ Exp ::= error:e
   {: RESULT = new Absyn.VarExp(lleft, v); :}
   |
   //SEQUENCE EXP
-  LPAREN SequenceExp:se RPAREN
+  LPAREN Exp_List:se RPAREN
   {: RESULT = new Absyn.SeqExp(seleft, se); :}
   |
   //CALL EXP
@@ -122,7 +122,7 @@ Exp ::= error:e
   {: RESULT = new Absyn.CallExp(ileft, sym(i), expl); :}
   |
   //LET
-  LET DecList:l IN SequenceExp:e END
+  LET DecList:l IN Exp_List:e END
   {: RESULT = new Absyn.LetExp(lleft, l, new Absyn.SeqExp(eleft, e)); :}
   |
   //RecordEXP
@@ -251,4 +251,20 @@ FieldExp_List_Rest ::= ID:i EQ Exp:exp
   |
   ID:i EQ Exp:exp COMMA FieldExp_List_Rest:list
   {: RESULT = new Absyn.FieldExpList(ileft, sym(i), exp, list); :}
+  ;
+
+//exp list
+Exp_List ::= 
+  //empty
+  {: RESULT = null; :}
+  |
+  Exp_List_Rest:r 
+  {: RESULT = r; :}
+  ;
+
+Exp_List_Rest ::= Exp:exp
+  {: RESULT = new Absyn.ExpList(exp, null); :}
+  |
+  Exp:exp SEMICOLON Exp_List_Rest:r
+  {: RESULT = new Absyn.ExpList(exp, r); :}
   ;
