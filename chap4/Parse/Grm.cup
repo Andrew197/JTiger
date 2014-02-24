@@ -85,7 +85,7 @@ TyDec_rest ::=
   //empty
   {: RESULT = null; :}
   |
-  tydec:t
+  Tydec:t
   {: RESULT = t; :}
   ;
 
