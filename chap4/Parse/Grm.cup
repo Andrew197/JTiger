@@ -37,7 +37,7 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
 	DO, LET, IN, END, OF, BREAK, NIL, FUNCTION, VAR, TYPE;
 
 //nonterminals
-non terminal Absyn.Exp            Parser, Exp;
+non terminal Absyn.Exp            MainParser, Exp;
 non terminal Absyn.Var            Var, Lvalue;
 non terminal Absyn.Dec            Dec, TyDec, TyDec_rest, VarDec;
 non terminal Absyn.Ty             Ty;
@@ -56,16 +56,16 @@ precedence left TIMES;
 precedence left DIVIDE;
 precedence nonassoc EQ, NEQ, GT, LT, GE, LE;
 
-start with Parser;
+start with MainParser;
 
-Parser ::=
+MainParser ::=
   {: RESULT = null; :}
   |
   Exp:exp
   {: RESULT = exp; :}
   ;
 
-DecList  ::= DecList:d DecList:
+DecList  ::=
   {: RESULT = null; :}
   |
   {: RESULT = new Absyn.DecList(d, l); :}
