@@ -38,7 +38,7 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
 
 //nonterminals
 non terminal Absyn.Exp            MainParser, Exp;
-non terminal Absyn.Var            Lvalue, Lvalue_Rest;
+non terminal Absyn.Var            Lvalue;
 non terminal Absyn.Dec            Dec, TyDec, TyDec_rest, VarDec;
 non terminal Absyn.Ty             Ty;
 non terminal Absyn.DecList        DecList;
@@ -49,6 +49,10 @@ non terminal Absyn.FunctionDec    Function_Dec, Function_Dec_Rest;
 
 //precedence
 precedence left AND;
+precedence nonassoc THEN;
+precedence nonassoc ELSE;
+precedence nonassoc ASSIGN;
+precedence nonassoc FUNCTION;
 precedence left OR;
 precedence left PLUS;
 precedence left MINUS;
@@ -196,16 +200,9 @@ Lvalue  ::= ID:i
   Lvalue:lv DOT ID:i
   {: RESULT = new Absyn.FieldVar(lvleft, lv, sym(i)); :}
   |
-  Lvalue_Rest:lvr
-  {: RESULT = r; :}
-  ;
-  /*Lvalue:lv LBRACK Exp:exp RBRACK
+  Lvalue:lv LBRACK Exp:exp RBRACK
   {: RESULT = new Absyn.SubscriptVar(lvleft, lv, exp); :}
-  ;*/
-
-Lvalue_Rest ::=
-{: RESULT = new Absyn.SubscriptVar(lvleft, lv, exp); :}
-;
+  ;
 
 Exp ::= error:e
   {: RESULT = new Absyn.SeqExp(eleft, null); :}
