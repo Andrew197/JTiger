@@ -67,7 +67,8 @@ MainParser ::=
 
 DecList  ::=
   {: RESULT = null; :}
-  |
+  
+  Dec:d DecList:dl
   {: RESULT = new Absyn.DecList(d, l); :}
   ;
 
