@@ -69,7 +69,7 @@ DecList  ::=
   {: RESULT = null; :}
   
   Dec:d DecList:dl
-  {: RESULT = new Absyn.DecList(d, l); :}
+  {: RESULT = new Absyn.DecList(d, dl); :}
   ;
 
 Dec ::= TyDec:td
@@ -97,7 +97,7 @@ Function_Dec  ::= FUNCTION ID:i LPAREN TyList:tl RPAREN EQ Exp:exp Function_Dec_
   {: RESULT = new Absyn.FunctionDec(ileft, sym(i), tl, new Absyn.NameTy(i2left, sym(i2)), exp, fdr); :}
   ;
 
-Function_Dec_Rest ::= /* vazio */
+Function_Dec_Rest ::= 
   {: RESULT = null; :}
   | Function_Dec:f
   {: RESULT = f; :}
@@ -219,7 +219,7 @@ Exp ::= error:e
   |
   //RecordEXP
   ID:i LBRACE FieldExp_List:sf RBRACE
-  {: RESULT = new Absyn.RecordExp(ileft, sym(i)), sf; :}
+  {: RESULT = new Absyn.RecordExp(ileft, sym(i), sf); :}
   |
   //NIL
   NIL:i
