@@ -47,7 +47,7 @@ non terminal Absyn.DecList        DecList;
 non terminal Absyn.ExpList        Exp_List, Exp_List_Rest, Arguments, ArgumentsRest;
 non terminal Absyn.FieldExpList   FieldExp_List, FieldExp_List_Rest;
 non terminal Absyn.FieldList      TyList, TyListRest;
-non terminal Absyn.FunctionDec    Function_Dec;
+non terminal Absyn.FunctionDec    Function_Dec, Function_Dec_Rest;
 
 //precedence
 precedence left AND;
@@ -72,6 +72,19 @@ Dec ::= TyDec:t
   |
   Function_Dec:f
   {: RESULT = (Absyn.Dec) f; :}
+  ;
+
+Function_Dec  ::= FUNCTION ID:i LPAREN TyList:tl RPAREN EQ Exp:exp Function_Dec_Rest:fdr
+  {: RESULT = new Absyn.FunctionDec(ileft, sym(i), tl, null, exp, fdr); :} 
+  |
+  FUNCTION ID:i LPAREN TyList:tl RPAREN COLON ID:i2 EQ Exp:exp Function_Dec_Rest:fdr
+  {: RESULT = new Absyn.FunctionDec(ileft, sym(i), tl, new Absyn.NameTy(i2left, sym(i2)), exp, fdr); :}
+  ;
+
+Function_Dec_Rest ::= /* vazio */
+  {: RESULT = null; :}
+  | Function_Dec:f
+  {: RESULT = f; :}
   ;
 
 TyDec ::= TYPE ID:i EQ Ty:ty TyDec_rest:tr
