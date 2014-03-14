@@ -76,8 +76,9 @@ digits = [0-9]+
 <COMMENT> . { }
 
 <STRING> "\"" { System.out.println("STRING END"); yybegin(YYINITIAL); String tempStringBuf = stringBuf; stringBuf = ""; return tok((sym.STRING), tempStringBuf);}
-<STRING> \n {System.out.println("Link break in string recorded."); newline(); stringBuf += yytext();}
-<STRING> [^\"|^\n]+ { System.out.println("adding " + yytext()); stringBuf += yytext(); }
+<STRING> \n {System.out.println("Link break in string recorded."); stringBuf += yytext();newline();}
+<STRING> \r {System.out.println("Link break in string recorded."); stringBuf += yytext();newline();}
+<STRING> [^\"|^\n|^\r]+ { System.out.println("adding " + yytext()); stringBuf += yytext(); }
 
 <YYINITIAL> ","	{return tok(sym.COMMA, null);}
 <YYINITIAL> ":" {return tok(sym.COLON, null);}

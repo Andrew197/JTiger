@@ -1,5 +1,9 @@
 ::::CURRENT ISSUES::::
 
+General File errors
+	Handling now
+
+
 Reduce/Reduces:
 	(Clear for now)
 
@@ -19,5 +23,3 @@ Shift/Reduces: (May include MANY more SIMILAR issues.)
 	State 90: between Exp ::= FOR ID ASSIGN Exp TO Exp DO Exp (*) and Exp ::= Exp (*) EQ Exp
 
 
-What are LValues? And why are they different from Vars? Because state 9's
-issue is more legit.
