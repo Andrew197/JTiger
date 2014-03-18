@@ -139,7 +139,9 @@ public class Semant {
 		else
 			error(((Absyn.Absyn) e).pos, "Unsure what type of expression we're dealing with here...");
 		if (result == null) {
+
 			debugPrint(e, "the result from this transExp is null. Likely that we haven't implemented it yet.");
+			debugPrint(this, e.toString());
 		}
 		e.type = result.ty;
 		debugPrint(this, "expression " + e.toString() + " evaluated to " + result.toString());
@@ -264,9 +266,23 @@ public class Semant {
 	}
 
 	// TODO implement
-	ExpTy transExp(Absyn.RecordExp e) {
+	ExpTy transExp(Absyn.RecordExp e) 
+	{
 		debugPrint(this, "Traversing RecordExp...");
-		return null;
+		Type expType = (Type)env.tenv.get(e.typ);
+
+		if (expType == null) 
+		{
+			error(e.pos, "undefined RecordExp type");
+			return new ExpTy(null, INT);
+		}
+		else if (!(t instanceof Types.RECORD)) 
+		{
+            error(e.pos, "not a recordExp");
+            return new ExpTy(null, INT);
+        }
+
+		return new ExpTy(null, INT);
 	}
 
 	// TODO implement
