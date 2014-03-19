@@ -4,7 +4,7 @@ import java.io.PrintWriter;
 import Parse.Parse;
 
 public class Main {
-	public static boolean	ISDEBUGMODE	= true;
+	public static boolean	ISDEBUGMODE	= false;
 
 	public static void main(String argv[]) {
 		if (ISDEBUGMODE) {
