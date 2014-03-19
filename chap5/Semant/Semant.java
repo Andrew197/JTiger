@@ -21,6 +21,11 @@ public class Semant {
 	Semant(Env e) {
 		env = e;
 	}
+	
+	Semant(Env e, boolean isdebug) {
+		env = e;
+		this.debug = debug;
+	}
 
 	/**
 	 * Every project I've ever done for these classes benefitted enormously from this method. We pass a message and an object (for clarity.) If the messages
@@ -200,6 +205,7 @@ public class Semant {
 				}
 				else {
 					debugPrint(e, "Nope. Type A:" + a.toString() + " Type B: " + b.toString());
+					//Omitted for git System.out.println("Nope. Type A:" + a.toString() + " Type B: " + b.toString());
 					error(((Absyn.Absyn) e).pos, "Types not compatable in EQ operator.");
 				}
 				return new ExpTy(null, INT);
@@ -345,7 +351,7 @@ public class Semant {
 
 		// Here, we call a function of some type. We first need to look it up
 		Entry function = (Entry) env.venv.get(e.func);
-		debugPrint(function, "After looking up, here's the function: " + function.toString());
+		debugPrint(function, "After looking up, here's the function.");
 
 		if (function instanceof FunEntry) {
 			FunEntry true_function = (FunEntry) function;
@@ -427,7 +433,12 @@ public class Semant {
 
 		debugPrint(this, "else clause");
 		ExpTy elsecl = transExp(e.elseclause);
-
+		
+		if(!(thencl.ty.coerceTo(elsecl.ty)) && !(elsecl.ty.coerceTo(thencl.ty))){
+			debugPrint(e,"Then and else clause do not evaluate to the same types.");
+			error(((Absyn.Absyn) (e)).pos, "Then and else clause do not evaluate to the same type.");
+		}
+		
 		debugPrint(this, "Returning from then and else checks.");
 		return new ExpTy(null, elsecl.ty);
 	}
@@ -461,7 +472,7 @@ public class Semant {
 	// TODO implement
 	ExpTy transExp(Absyn.WhileExp e) {
 		debugPrint(this, "Traversing WhileExp...");
-		Semant loop = new LoopSemant(env);
+		Semant loop = new LoopSemant(env,true);
 		ExpTy condition = transExp(e.test);
 		ExpTy loopBody = loop.transExp(e.body);
 
@@ -543,11 +554,21 @@ public class Semant {
 			Type headType = transTy(head.ty);
 			name.bind(headType);
 		}
+		
+		for(Absyn.TypeDec type = d; type != null; type = type.next)
+        {
+            Types.NAME name = type.entry;
+            if(name.isLoop())
+                error(((Absyn.Absyn) (type)).pos, "illegal type cycle");
+        }
+		
 		return null;
 	}
 
 	// TODO taken from pg 125. Build to handle multiple function declarations, void returning functions, and recursive functions
 	Exp transDec(Absyn.FunctionDec fd) {
+		debugPrint(this,"Translating function.");
+		debugPrint(fd,"Here's the function we're translating.");
 		java.util.Hashtable hash = new java.util.Hashtable();
 		for (Absyn.FunctionDec f = fd; f != null; f = f.next) {
 			if (hash.put(f.name, f.name) != null)
@@ -567,7 +588,8 @@ public class Semant {
 				rec = rec.tail;
 			}
 
-			Semant fun = new Semant(env);
+			Semant fun = new Semant(env,true);
+			debugPrint(f.body,"translating function");
 			ExpTy body = fun.transExp(f.body);
 			if (!body.ty.coerceTo(f.entry.result)) {
 				error(((Absyn.Absyn) (f.body)).pos, "result type mismatch");
