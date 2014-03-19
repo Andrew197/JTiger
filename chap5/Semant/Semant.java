@@ -298,6 +298,14 @@ public class Semant {
 		return new ExpTy(null, VOID);
 	}
 
+	//DONE
+	ExpTy transExp(Absyn.BreakExp e) 
+	{
+		debugPrint(this, "Break expressions not allowed under normal circumstances.");
+		error(((Absyn.Absyn) (e)).pos, "Break expressions not allowed under normal circumstances.");
+		return new ExpTy(null, VOID);
+	}
+
 	//DONE, I Think
 	ExpTy transExp(Absyn.AssignExp e) 
 	{
@@ -319,49 +327,8 @@ public class Semant {
 		return new ExpTy(null, VOID);
 	}
 
-	//DONE
-	ExpTy transExp(Absyn.BreakExp e) 
+	ExpTy transExp(Absyn.IntExp e) 
 	{
-		debugPrint(this, "Break expressions not allowed under normal circumstances.");
-		error(((Absyn.Absyn) (e)).pos, "Break expressions not allowed under normal circumstances.");
-		return new ExpTy(null, VOID);
-	}
-
-	ExpTy transExp(Absyn.CallExp e) {
-		debugPrint(this, "Traversing CallExp...");
-		// Here, we call a function of some type. We first need to look it up
-		Entry function = (Entry) env.venv.get(e.func);
-		debugPrint(function, "After looking up, here's the function: " + function.toString());
-		if (function instanceof FunEntry) {
-			FunEntry true_function = (FunEntry) function;
-			debugPrint(true_function,"Here's the function entry with result: " + true_function.result);
-			return new ExpTy(null, true_function.result);
-		}
-		else {
-			debugPrint(e, "Funtion not found in val environment. DUCK!!!");
-			error(((Absyn.Absyn) (e)).pos, "Funtion not found in val environment: " + e.func);
-			return new ExpTy(null, VOID);
-		}
-	}
-
-	// TODO fix
-	ExpTy transExp(Absyn.IfExp e) {
-		debugPrint(this, "Traversing IfExp...");
-		debugPrint(e, "If statements first have a test. Let's Pull it out and make sure it evalueates to true/false");
-		ExpTy condition = transExp(e.test);
-		checkInt(condition, ((Absyn.Absyn) e).pos); // This makes sure we're dealing with a boolean.
-		debugPrint(condition, "Condition is good to go.");
-		debugPrint(e, "Next, we check the then and else clauses.");
-		debugPrint(this, "then clause");
-		ExpTy thenclause = transExp(e.thenclause);
-		debugPrint(this, "else clause");
-		ExpTy elseclause = transExp(e.elseclause);
-
-		debugPrint(this, "Returning from then and else checks.");
-		return new ExpTy(null, elseclause.ty);
-	}
-
-	ExpTy transExp(Absyn.IntExp e) {
 		debugPrint(this, "Traversing IntExp...");
 		// Not much to do for Ints
 		return new ExpTy(null, INT);
@@ -373,39 +340,104 @@ public class Semant {
 		return new ExpTy(null, NIL);
 	}
 
-	// TODO fix
-	ExpTy transExp(Absyn.RecordExp e) {
-		debugPrint(this, "Traversing RecordExp...");
+	ExpTy transExp(Absyn.StringExp e) 
+	{
+		debugPrint(this, "Traversing StringExp...");
+		// Not much to do for String expressions. Yay.
+		return new ExpTy(null, STRING);
+	}
+
+
+	//Should work
+	ExpTy transExp(Absyn.CallExp e) 
+	{
+		debugPrint(this, "Beginning Traverse of a CallExp...");
+
+		// Here, we call a function of some type. We first need to look it up
+		Entry function = (Entry) env.venv.get(e.func);
+		debugPrint(function, "After looking up, here's the function: " + function.toString());
+		
+		if (function instanceof FunEntry) 
+		{
+			FunEntry true_function = (FunEntry) function;
+			debugPrint(true_function,"Here's the function entry with result: " + true_function.result);
+			return new ExpTy(null, true_function.result);
+		}
+		else 
+		{
+			debugPrint(e, "Funtion not found in val environment. DUCK!!!");
+			error(((Absyn.Absyn) (e)).pos, "Funtion not found in val environment: " + e.func);
+			return new ExpTy(null, VOID);
+		}
+	}
+
+	//Good to go
+	ExpTy transExp(Absyn.RecordExp e) 
+	{
+		debugPrint(this, "Traversing this RecordExp...");
 		debugPrint(e, "Pull this expression from the types environment to see if it already exists.");
 		Types.NAME result = (Types.NAME) env.tenv.get(e.typ);
-		if (result != null) {
-			debugPrint(e, "I exist in the types table! But am I a Record type?");
+		
+		if (result != null) 
+		{
+			debugPrint(e, "I exist in the types table! But am I actually a Record type?");
 			Types.Type actual = result.actual();
-			if (actual instanceof Types.RECORD) {
-				debugPrint(actual, "yep.");
-				Types.RECORD r = (Types.RECORD) actual;
-				transFields(((Absyn.Absyn) (e)).pos, r, e.fields);
+			if (actual instanceof Types.RECORD) 
+			{
+				debugPrint(actual, "you bet I am.");
+				Types.RECORD rec = (Types.RECORD) actual;
+				transFields(((Absyn.Absyn) (e)).pos, rec, e.fields);
 				return new ExpTy(null, result);
 			}
-			else {
-				debugPrint(actual, "nope.");
+			else 
+			{
+				debugPrint(actual, "nope, i'm not.");
+				error(((Absyn.Absyn) (e)).pos, "This recordEXP isn't actually a record");
 			}
-			error(((Absyn.Absyn) (e)).pos, "record type required");
 		}
-		else {
-			error(((Absyn.Absyn) (e)).pos, "undeclared type: " + e.typ);
+		else 
+		{
+			//you get nothing. you lose. good day sir
+			error(((Absyn.Absyn) (e)).pos, "recordEXP doesn't exist in the types table. NULL!");
 		}
+		debugPrint(this, "Finished Traversing this RecordExp...");
 		return new ExpTy(null, VOID);
 	}
 
-	// TODO fix
-	ExpTy transExp(Absyn.SeqExp e) {
+	//fixed!
+	ExpTy transExp(Absyn.IfExp e) 
+	{
+		debugPrint(this, "Traversing IfExp...");
+		debugPrint(e, "If statements first have a test condition. Let's Pull it out and make sure it evalueates to true/false");
+		ExpTy condition = transExp(e.test);
+		
+		checkInt(condition, ((Absyn.Absyn) e).pos); // This makes sure we're dealing with a boolean.
+		debugPrint(condition, "Condition is good to go.");
+		
+		debugPrint(e, "Next, we check the then and else clauses.");
+		
+		debugPrint(this, "then clause");
+		ExpTy thencl = transExp(e.thenclause);
+		
+		debugPrint(this, "else clause");
+		ExpTy elsecl = transExp(e.elseclause);
+
+		debugPrint(this, "Returning from then and else checks.");
+		return new ExpTy(null, elsecl.ty);
+	}
+
+	//MIGHT be fixed. Caution advised
+	ExpTy transExp(Absyn.SeqExp e) 
+	{
 		debugPrint(this, "Traversing SeqExp...");
 		Types.Type type = VOID;
+
 		debugPrint(e, "Getting SeqExp list.");
 		Absyn.ExpList exp = e.list;
+
 		debugPrint(exp, "looping around the sequence.");
-		while (exp != null) {
+		while (exp != null) 
+		{
 			ExpTy headExp = transExp(exp.head);
 			type = headExp.ty;
 			exp = exp.tail;
@@ -414,14 +446,9 @@ public class Semant {
 		return new ExpTy(null, type);
 	}
 
-	ExpTy transExp(Absyn.StringExp e) {
-		debugPrint(this, "Traversing StringExp...");
-		// Not much to do for String expressions
-		return new ExpTy(null, STRING);
-	}
-
-	// TODO implement
-	ExpTy transExp(Absyn.VarExp e) {
+	//looks good so far
+	ExpTy transExp(Absyn.VarExp e) 
+	{
 		debugPrint(this, "Traversing VarExp...");
 		ExpTy result = transVar(e.var);
 		debugPrint(this, "result of VarExp = " + result.toString());
@@ -429,9 +456,17 @@ public class Semant {
 	}
 
 	// TODO implement
-	ExpTy transExp(Absyn.WhileExp e) {
+	ExpTy transExp(Absyn.WhileExp e) 
+	{
 		debugPrint(this, "Traversing WhileExp...");
-		return null;
+		Semant loop = new LoopSemant(env);
+		ExpTy condition = transExp(e.test);
+		ExpTy loopBody = loop.transExp(e.body);
+
+		if(!loopBody.ty.coerceTo(VOID)) error(e.pos, "this loop is null");
+        
+		debugPrint(this, "Done Traversing WhileExp...");
+        return new ExpTy(null, VOID);
 	}
 
 	/**
