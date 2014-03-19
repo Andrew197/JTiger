@@ -28,6 +28,9 @@ public class Semant {
 	 */
 	private void debugPrint(Object sender, String message) {
 		if (debug) {
+			if(sender == null){
+				System.out.println("null -> " + message); //Null ptr exeception protection.
+			}
 			if (!(sender instanceof Semant)) {
 				System.out.println(sender.getClass().toString().substring(6) + "-> " + message);
 			}
@@ -139,9 +142,7 @@ public class Semant {
 		else
 			error(((Absyn.Absyn) e).pos, "Unsure what type of expression we're dealing with here...");
 		if (result == null) {
-
 			debugPrint(e, "the result from this transExp is null. Likely that we haven't implemented it yet.");
-			debugPrint(this, e.toString());
 		}
 		e.type = result.ty;
 		debugPrint(this, "expression " + e.toString() + " evaluated to " + result.toString());
@@ -149,7 +150,10 @@ public class Semant {
 	}
 
 	ExpTy transExp(Absyn.OpExp e) {
+		debugPrint(this, "translating OpExp...");
+		debugPrint(e, "translate left side");
 		ExpTy left = transExp(e.left);
+		debugPrint(this, "OpExp>>>translate right side.");
 		ExpTy right = transExp(e.right);
 
 		// TODO implement the other operations(?)
@@ -157,6 +161,44 @@ public class Semant {
 			case Absyn.OpExp.PLUS:
 				checkInt(left, e.left.pos);
 				checkInt(right, e.right.pos);
+				return new ExpTy(null, INT);
+			case Absyn.OpExp.MINUS:
+				checkInt(left, e.left.pos);
+				checkInt(right, e.right.pos);
+				return new ExpTy(null, INT);
+			case Absyn.OpExp.MUL:
+				checkInt(left, e.left.pos);
+				checkInt(right, e.right.pos);
+				return new ExpTy(null, INT);
+			case Absyn.OpExp.DIV:
+				checkInt(left, e.left.pos);
+				checkInt(right, e.right.pos);
+				return new ExpTy(null, INT);
+				// We will need EQ, NE, LT, LE, GT, GE as well
+			case Absyn.OpExp.EQ:
+				debugPrint(e, "Checking = expr.");
+				Type a = left.ty.actual();
+				Type b = right.ty.actual();
+				debugPrint(e, "Is the left an appropriate type?");
+				if (!(a instanceof Types.INT) && !(a instanceof Types.STRING) && !(a instanceof Types.NIL)
+						&& !(a instanceof Types.RECORD) && !(a instanceof Types.ARRAY)) {
+					error(((Absyn.Absyn) e).pos,
+							"Cannot use EQ with something other than int, str, nil, record or array.");
+				}
+				debugPrint(e, "Is the right an appropriate type?");
+				if (!(b instanceof Types.INT) && !(b instanceof Types.STRING) && !(b instanceof Types.NIL)
+						&& !(b instanceof Types.RECORD) && !(b instanceof Types.ARRAY)) {
+					error(((Absyn.Absyn) e).pos,
+							"Cannot use EQ with something other than int, str, nil, record or array.");
+				}
+				debugPrint(e, "Are the types the same?");
+				if (left.ty.coerceTo(right.ty) && right.ty.coerceTo(left.ty)) {
+					debugPrint(e, "Everything looks good. Returning new ExpTy.");
+				}
+				else {
+					debugPrint(e, "Nope. Type A:" + a.toString() + " Type B: " + b.toString());
+					error(((Absyn.Absyn) e).pos, "Types not compatable in EQ operator.");
+				}
 				return new ExpTy(null, INT);
 			default:
 				throw new Error("unknown operator");
@@ -212,9 +254,8 @@ public class Semant {
 		ExpTy init = transExp(e.init);
 		debugPrint(this, "continuing with transExp(ArrayExp).");
 		debugPrint(e, "Last, we check to be sure the array's type and the elements' type match up.");
-		
-		System.out.println(name.actual());
-		Type actual = name.actual(); //This got explained in class.
+
+		Type actual = name.actual(); // This got explained in class.
 		if (actual instanceof Types.ARRAY) {
 			Types.ARRAY array = (Types.ARRAY) actual;
 			if (!init.ty.coerceTo(array.element)) {
@@ -225,82 +266,132 @@ public class Semant {
 				return new ExpTy(null, name);
 			}
 		}
-
 		return new ExpTy(null, VOID);
 	}
 
-	// TODO implement
+	// TODO fix
 	ExpTy transExp(Absyn.AssignExp e) {
 		debugPrint(this, "Traversing AssignExp...");
-		return null;
+		debugPrint(e, "Translating the var");
+		ExpTy var = transVar(e.var, true);
+		debugPrint(this, "transExp(AssignExp): Translating the expression: " + e.exp);
+		ExpTy exp = transExp(e.exp);
+		debugPrint(this, "transExp(AssignExp): Checking to see if the types of the expression and var match");
+		if (!exp.ty.coerceTo(var.ty)) {
+			debugPrint(exp, "Nope. DUCK!!!");
+			error(((Absyn.Absyn) (e)).pos, "assignment var and expression types don't match");
+		}
+		else {
+			debugPrint(exp, "Yep.");
+		}
+		return new ExpTy(null, VOID);
 	}
 
-	// TODO implement
+	// TODO test
 	ExpTy transExp(Absyn.BreakExp e) {
-		debugPrint(this, "Traversing BreakExp...");
-		return null;
+		debugPrint(this, "Break expressions not allowed under normal circumstances.");
+		error(((Absyn.Absyn) (e)).pos, "Break expressions not allowed under normal circumstances.");
+		return new ExpTy(null, VOID);
 	}
 
-	// TODO implement
 	ExpTy transExp(Absyn.CallExp e) {
 		debugPrint(this, "Traversing CallExp...");
-		return null;
+		// Here, we call a function of some type. We first need to look it up
+		Entry function = (Entry) env.venv.get(e.func);
+		debugPrint(function, "After looking up, here's the function: " + function.toString());
+		if (function instanceof FunEntry) {
+			FunEntry true_function = (FunEntry) function;
+			debugPrint(true_function,"Here's the function entry with result: " + true_function.result);
+			return new ExpTy(null, true_function.result);
+		}
+		else {
+			debugPrint(e, "Funtion not found in val environment. DUCK!!!");
+			error(((Absyn.Absyn) (e)).pos, "Funtion not found in val environment: " + e.func);
+			return new ExpTy(null, VOID);
+		}
 	}
 
-	// TODO implement
+	// TODO fix
 	ExpTy transExp(Absyn.IfExp e) {
 		debugPrint(this, "Traversing IfExp...");
-		return null;
+		debugPrint(e, "If statements first have a test. Let's Pull it out and make sure it evalueates to true/false");
+		ExpTy condition = transExp(e.test);
+		checkInt(condition, ((Absyn.Absyn) e).pos); // This makes sure we're dealing with a boolean.
+		debugPrint(condition, "Condition is good to go.");
+		debugPrint(e, "Next, we check the then and else clauses.");
+		debugPrint(this, "then clause");
+		ExpTy thenclause = transExp(e.thenclause);
+		debugPrint(this, "else clause");
+		ExpTy elseclause = transExp(e.elseclause);
+
+		debugPrint(this, "Returning from then and else checks.");
+		return new ExpTy(null, elseclause.ty);
 	}
 
-	// TODO implement
 	ExpTy transExp(Absyn.IntExp e) {
 		debugPrint(this, "Traversing IntExp...");
+		// Not much to do for Ints
 		return new ExpTy(null, INT);
 	}
 
-	// TODO implement
 	ExpTy transExp(Absyn.NilExp e) {
 		debugPrint(this, "Traversing NilExp...");
-		return null;
+		// Defintely nothing to do with NilExp
+		return new ExpTy(null, NIL);
 	}
 
-	// TODO implement
-	ExpTy transExp(Absyn.RecordExp e) 
-	{
+	// TODO fix
+	ExpTy transExp(Absyn.RecordExp e) {
 		debugPrint(this, "Traversing RecordExp...");
-		Type expType = (Type)env.tenv.get(e.typ);
-
-		if (expType == null) 
-		{
-			error(e.pos, "undefined RecordExp type");
-			return new ExpTy(null, INT);
+		debugPrint(e, "Pull this expression from the types environment to see if it already exists.");
+		Types.NAME result = (Types.NAME) env.tenv.get(e.typ);
+		if (result != null) {
+			debugPrint(e, "I exist in the types table! But am I a Record type?");
+			Types.Type actual = result.actual();
+			if (actual instanceof Types.RECORD) {
+				debugPrint(actual, "yep.");
+				Types.RECORD r = (Types.RECORD) actual;
+				return new ExpTy(null, result);
+			}
+			else {
+				debugPrint(actual, "nope.");
+			}
+			error(((Absyn.Absyn) (e)).pos, "record type required");
 		}
-		else if (!(t instanceof Types.RECORD)) 
-		{
-            error(e.pos, "not a recordExp");
-            return new ExpTy(null, INT);
-        }
-
-		return new ExpTy(null, INT);
+		else {
+			error(((Absyn.Absyn) (e)).pos, "undeclared type: " + e.typ);
+		}
+		return new ExpTy(null, VOID);
 	}
 
-	// TODO implement
+	// TODO fix
 	ExpTy transExp(Absyn.SeqExp e) {
-		debugPrint(this, "Traversing IfExp...");
-		return null;
+		debugPrint(this, "Traversing SeqExp...");
+		Types.Type type = VOID;
+		debugPrint(e, "Getting SeqExp list.");
+		Absyn.ExpList exp = e.list;
+		debugPrint(exp, "looping around the sequence.");
+		while (exp != null) {
+			ExpTy headExp = transExp(exp.head);
+			type = headExp.ty;
+			exp = exp.tail;
+		}
+		debugPrint(e, "Returning with type " + type);
+		return new ExpTy(null, type);
 	}
 
-	// TODO implement
 	ExpTy transExp(Absyn.StringExp e) {
 		debugPrint(this, "Traversing StringExp...");
-		return null;
+		// Not much to do for String expressions
+		return new ExpTy(null, STRING);
 	}
 
 	// TODO implement
 	ExpTy transExp(Absyn.VarExp e) {
 		debugPrint(this, "Traversing VarExp...");
-		return null;
+		ExpTy result = transVar(e.var);
+		debugPrint(this, "result of VarExp = " + result.toString());
+		return result;
 	}
 
 	// TODO implement
@@ -335,36 +426,107 @@ public class Semant {
 	Exp transDec(Absyn.TypeDec d) {
 		debugPrint(this, "Traversing typedec");
 		debugPrint(d, "Typedecs have many symbols. Let's build a list of them");
+
 		java.util.ArrayList<Symbol.Symbol> symList = new java.util.ArrayList<Symbol.Symbol>();
+
 		for (Absyn.TypeDec head = d; head != null; head = head.next) {
 			// ArrayList.add() will return false if the element is already present in the list.
 			if (symList.add(head.name)) {
-				env.tenv.put(head.name, new Types.NAME(head.name));
+				Types.NAME name = new Types.NAME(head.name);
+				head.entry = name;
+				env.tenv.put(head.name, name);
 				debugPrint(head, "added " + head.name + " to the types tables");
 			}
 			else {
 				debugPrint(head, "duplicate name detected!");
-				throw new Error("Duplicate name detected in type declaration.");
+				error(((Absyn.Absyn) d).pos, "Duplicate name detected in type declaration.");
 			}
 		}
-
+		// Bind the symbols we just stored to thier types.
+		// We do this now becuase of mutally recursive types
+		debugPrint(d, "Next we need to bind all of the symbols to their types");
+		for (Absyn.TypeDec head = d; head != null; head = head.next) {
+			if (head.entry == null) {
+				debugPrint(head, "entry is null");
+				return null;
+			}
+			Types.NAME name = head.entry;
+			Type headType = transTy(head.ty);
+			name.bind(headType);
+		}
 		return null;
 	}
 
-	// TODO implement
-	Exp transDec(Absyn.FunctionDec d) {
-		debugPrint(this, "Traversing functiondec");
+	// TODO taken from pg 125. Build to handle multiple function declarations, void returning functions, and recursive functions
+	Exp transDec(Absyn.FunctionDec fd) {
+		/*
+		 * Hashtable hash = new Hashtable(); for(FunctionDec f = d; f != null; f = f.next) { if(hash.put(f.name, f.name) != null) error(((Absyn) (f)).pos,
+		 * "function redeclared"); RECORD fields = transTypeFields(new Hashtable(), f.params); Type type = transTy(f.result); f.entry = new FunEntry(fields,
+		 * type); env.venv.put(f.name, f.entry); } for(FunctionDec f = d; f != null; f = f.next) { env.venv.beginScope(); putTypeFields(f.entry.formals); Semant
+		 * fun = new Semant(env); ExpTy body = fun.transExp(f.body); if(!body.ty.coerceTo(f.entry.result)) error(((Absyn) (f.body)).pos,
+		 * "result type mismatch"); env.venv.endScope(); }
+		 */
+		Absyn.FunctionDec temp = fd;
+		while (temp != null) {
+			debugPrint(this, "Traversing functiondec");
+			debugPrint(fd, "Let's get the result of this function");
+			Types.Type result = transTy(fd.result);
+
+			debugPrint(this, "return to functiondec. here's the result.");
+			debugPrint(fd, "Now, let's have a look at the formals.");
+			Types.RECORD formals = transTypeFields(new java.util.Hashtable(), fd.params);
+
+			debugPrint(formals, "Here they are.");
+			FunEntry fe = new FunEntry(formals, result);
+			temp.entry = fe;
+			env.venv.put(fd.name, fe);
+			temp = temp.next;
+		}
+		temp = fd;
+		while (temp != null) {
+			env.venv.beginScope(); // handle the params and function-scope vars
+
+			for (Absyn.FieldList p = fd.params; p != null; p = p.tail) {
+				env.venv.put(p.name, new VarEntry((Types.Type) env.tenv.get(p.typ)));
+			}
+			ExpTy result = transExp(fd.body);
+			if (!result.ty.coerceTo(fd.entry.result))
+				error(((Absyn.Absyn) (fd.body)).pos, "Result type and function return type don't match.");
+			env.venv.endScope();
+			temp = temp.next;
+		}
 		return null;
 	}
 
 	/**
-	 * It appears we need a transDec method for each and every form of Absyn.Dec
+	 * This function comes from the suggestion of the book pg 125 It reads: "...transTypeFields on each formal parameter; this yeilds a 'record type,'
+	 * (a,t_a),(b,t_b) where t_a is the NAME type found by looking up ta in the type environment.
 	 */
-	Exp transDec(Absyn.VarDec d) {
-		debugPrint(d, "Beggining transDec");
+	// TODO fix
+	private void transFields(int epos, Types.RECORD f, Absyn.FieldExpList exp) {
+		if (f == null) {
+			if (exp != null)
+				error(((Absyn.Absyn) (exp)).pos, "too many expressions");
+			return;
+		}
+		if (exp == null) {
+			error(epos, "missing expression for " + f.fieldName);
+			return;
+		}
+		ExpTy e = transExp(exp.init);
+		if (exp.name != f.fieldName)
+			error(((Absyn.Absyn) (exp)).pos, "field name mismatch");
+		if (!e.ty.coerceTo(f.fieldType))
+			error(((Absyn.Absyn) (exp)).pos, "field type mismatch");
+		transFields(epos, f.tail, exp.tail);
+	}
 
+	Exp transDec(Absyn.VarDec d) {
+		debugPrint(this, "Beggining transDec");
+		debugPrint(d, "translate the init expression.");
 		// Get the Expression type (a class composed of an expression, and it's resulting type.)
 		ExpTy init = transExp(d.init);
+		debugPrint(this, "continuing transDec");
 		Type type; // we determine the type in the if statement below
 		if (d.typ == null) {
 			debugPrint(d, "my typ is null, pull my real type from the init data I hold.");
@@ -372,9 +534,12 @@ public class Semant {
 			debugPrint(d, "That type is: " + type.toString());
 		}
 		else {
-			type = VOID;
-			throw new Error("unimplemented"); // Not sure what to implement here... It sounds like a complete logic flow to me -Mitch
-												// Maybe we're this occurs when a varible has already been declared? -Mitch
+			debugPrint(d, "my typ is not null, check to be sure there's no type mismatch.");
+			type = transTy(d.typ);
+			if (!init.ty.coerceTo(type)) {
+				debugPrint(d, "inializer type and var type don't match.");
+				error(((Absyn.Absyn) (d)).pos, "assignment type and var type do not match up");
+			}
 		}
 
 		// Store the resulting entry
@@ -382,5 +547,137 @@ public class Semant {
 		d.entry = new VarEntry(type);
 		env.venv.put(d.name, d.entry);
 		return null;
+	}
+
+	// TODO fix
+	ExpTy transVar(Absyn.Var v) {
+		debugPrint(this, "translating var");
+		return transVar(v, false);
+	}
+
+	// TODO fix
+	ExpTy transVar(Absyn.Var v, boolean lhs) {
+		debugPrint(v, "route through type");
+		if (v instanceof Absyn.SimpleVar)
+			return transVar((Absyn.SimpleVar) v, lhs);
+		if (v instanceof Absyn.FieldVar)
+			return transVar((Absyn.FieldVar) v);
+		if (v instanceof Absyn.SubscriptVar)
+			return transVar((Absyn.SubscriptVar) v);
+		else
+			throw new Error("Not a valid Var");
+	}
+	
+	ExpTy transVar(Absyn.FieldVar fv) {
+		ExpTy var = transVar(fv.var);
+		Type actual = var.ty.actual();
+		if (!(actual instanceof Types.RECORD)) {
+			error(((Absyn.Absyn) (fv.var)).pos, "record required");
+		}
+		else {
+			Types.RECORD field = (Types.RECORD) actual;
+			while (field != null) {
+				if (field.fieldName == fv.field) { return new ExpTy(null, field.fieldType); }
+				field = field.tail;
+			}
+			error(((Absyn.Absyn) (fv)).pos, "undeclared field: " + fv.field);
+		}
+		return new ExpTy(null, VOID);
+	}
+
+	// TODO fix
+	ExpTy transVar(Absyn.SimpleVar v, boolean lhs) {
+		debugPrint(v,"Translating simple var.");
+		debugPrint(v,"Get entry from symbol table.");
+		Entry x = (Entry) env.venv.get(v.name);
+		debugPrint(x,"Here it is.");
+		if (x instanceof VarEntry) {
+			VarEntry ent = (VarEntry) x;
+			if (lhs && (ent instanceof LoopVarEntry))
+				error(((Absyn.Absyn) (v)).pos, "assignment to loop index");
+			return new ExpTy(null, ent.ty);
+		}
+		else {
+			error(((Absyn.Absyn) (v)).pos, "undeclared variable: " + v.name);
+			return new ExpTy(null, VOID);
+		}
+	}
+
+	// TODO fix
+	ExpTy transVar(Absyn.SubscriptVar v) {
+		ExpTy var = transVar(v.var);
+		ExpTy index = transExp(v.index);
+		checkInt(index, ((Absyn.Absyn) (v.index)).pos);
+		Type actual = var.ty.actual();
+		if (actual instanceof Types.ARRAY) {
+			Types.ARRAY array = (Types.ARRAY) actual;
+			return new ExpTy(null, array.element);
+		}
+		else {
+			error(((Absyn.Absyn) (v.var)).pos, "array required");
+			return new ExpTy(null, VOID);
+		}
+	}
+
+	/**
+	 * This series of methods comes from the book. It reads: "The transTy function translates type expressions as found in the abstract syntax (Absyn.Ty) to the
+	 * digested type descriptions that we will put into environments (Types.Type). This translation is done by recurring over the structure of an Absyn.Type,
+	 * turning Absyn.RecordTy into Types.RECORD, etc. While Translating, transTy looks up any symbols it finds in the type environment tenv.
+	 */
+	Type transTy(Absyn.Ty t) {
+		if (t instanceof Absyn.NameTy)
+			return transTy((Absyn.NameTy) t);
+		if (t instanceof Absyn.RecordTy)
+			return transTy((Absyn.RecordTy) t);
+		if (t instanceof Absyn.ArrayTy)
+			return transTy((Absyn.ArrayTy) t);
+		else
+			throw new Error("Not a valid subclass of Ty");
+	}
+
+	Type transTy(Absyn.ArrayTy t) {
+		Types.NAME name = (Types.NAME) env.tenv.get(t.typ);
+		if (name != null) {
+			return new Types.ARRAY(name);
+		}
+		else {
+			error(((Absyn.Absyn) (t)).pos, "undeclared type: " + t.typ);
+			return VOID;
+		}
+	}
+
+	// TODO fix
+	Type transTy(Absyn.NameTy t) {
+		if (t == null)
+			return VOID;
+		Types.NAME name = (Types.NAME) env.tenv.get(t.name);
+		if (name != null) {
+			return name;
+		}
+		else {
+			error(((Absyn.Absyn) (t)).pos, "undeclared type: " + t.name);
+			return VOID;
+		}
+	}
+
+	// TODO fix
+	Type transTy(Absyn.RecordTy t) {
+		Types.RECORD type = transTypeFields(new java.util.Hashtable(), t.fields);
+		if (type != null)
+			return type;
+		else
+			return VOID;
+	}
+
+	// TODO fix
+	private Types.RECORD transTypeFields(java.util.Hashtable hash, Absyn.FieldList f) {
+		if (f == null)
+			return null;
+		Types.NAME name = (Types.NAME) env.tenv.get(f.typ);
+		if (name == null)
+			error(((Absyn.Absyn) (f)).pos, "undeclared type: " + f.typ);
+		if (hash.put(f.name, f.name) != null)
+			error(((Absyn.Absyn) (f)).pos, "function parameter/record field redeclared: " + f.name);
+		return new Types.RECORD(f.name, name, transTypeFields(hash, f.tail));
 	}
 }
