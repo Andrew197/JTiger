@@ -560,18 +560,18 @@ public class Semant {
 
 		for (Absyn.FunctionDec f = fd; f != null; f = f.next) {
 			env.venv.beginScope();
-			
+
 			Types.RECORD rec = f.entry.formals;
 			while (rec != null) {
 				env.venv.put(rec.fieldName, new VarEntry(rec.fieldType));
 				rec = rec.tail;
 			}
-			
+
 			Semant fun = new Semant(env);
 			ExpTy body = fun.transExp(f.body);
-			if (!body.ty.coerceTo(f.entry.result))
-				;
-			error(((Absyn.Absyn) (f.body)).pos, "result type mismatch");
+			if (!body.ty.coerceTo(f.entry.result)) {
+				error(((Absyn.Absyn) (f.body)).pos, "result type mismatch");
+			}
 			env.venv.endScope();
 		}
 
