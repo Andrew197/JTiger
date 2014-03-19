@@ -370,8 +370,9 @@ public class Semant {
 					break;
 				}
 				if (args == null) {
-					debugPrint(args.head, "missing arg for " + formals.fieldName);
-					error(((Absyn.Absyn) (args.head)).pos, "Missing argument.");
+					debugPrint(e, "missing arg for " + formals.fieldName);
+					error(((Absyn.Absyn) e).pos, "Missing argument.");
+					break;
 				}
 				ExpTy exp = transExp(args.head);
 				if (!exp.ty.coerceTo(formals.fieldType))
