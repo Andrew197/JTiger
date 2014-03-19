@@ -351,6 +351,7 @@ public class Semant {
 			if (actual instanceof Types.RECORD) {
 				debugPrint(actual, "yep.");
 				Types.RECORD r = (Types.RECORD) actual;
+				transFields(((Absyn.Absyn) (e)).pos, r, e.fields);
 				return new ExpTy(null, result);
 			}
 			else {
