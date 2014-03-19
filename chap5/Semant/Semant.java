@@ -174,7 +174,7 @@ public class Semant {
 				checkInt(left, e.left.pos);
 				checkInt(right, e.right.pos);
 				return new ExpTy(null, INT);
-				// We will need EQ, NE, LT, LE, GT, GE as well
+			case Absyn.OpExp.NE: //In Java switch statements, finding a case without break statements will go down the list of case statements.
 			case Absyn.OpExp.EQ:
 				debugPrint(e, "Checking = expr.");
 				Type a = left.ty.actual();
@@ -200,6 +200,17 @@ public class Semant {
 					error(((Absyn.Absyn) e).pos, "Types not compatable in EQ operator.");
 				}
 				return new ExpTy(null, INT);
+			case Absyn.OpExp.LT:
+			case Absyn.OpExp.LE:
+			case Absyn.OpExp.GT:
+			case Absyn.OpExp.GE:
+				Type l = left.ty.actual();
+				Type r = right.ty.actual();
+		        if(!(l instanceof Types.INT) && !(l instanceof Types.STRING)&&!(r instanceof Types.INT) && !(r instanceof Types.STRING))
+		            error(((Absyn.Absyn) (e)).pos, "Op requires a string or int");
+		        if(!left.ty.coerceTo(right.ty) && !right.ty.coerceTo(left.ty))
+	                error(((Absyn.Absyn) (e)).pos, "types don't seem to match");
+		        return new ExpTy(null, INT);
 			default:
 				throw new Error("unknown operator");
 		}
@@ -226,7 +237,7 @@ public class Semant {
 		return new ExpTy(null, body.ty);
 	}
 
-	// TODO implement
+
 	ExpTy transExp(Absyn.ArrayExp e) {
 		debugPrint(this, "Traversing ArrayExp...");
 		debugPrint(e, "Get the NAME of the expression from the type env.");
