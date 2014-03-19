@@ -43,40 +43,39 @@ public class Semant {
 	/**
 	 * Used from the Main class to begin Semantic analysis.
 	 */
-	public void transProg(Absyn.Exp exp) {
+	public void transProg(Absyn.Exp exp) 
+	{
 		debugPrint(this, "Begin!");
 		// If we need to, this allows us the room to print the symbol table on error catching
-		try {
-			debugPrint(exp, "Start decent of expression.");
+		try 
+		{
+			debugPrint(exp, "Start descent of expression.");
 			transExp(exp);
 			debugPrint(this, "Done!"); // eyes on the prize!
+			error(exp.pos, "generic test error!");
 		}
-		catch (Error e) {
-			System.err.println(e);
-			// Print the symbol table? -Not sure how to do.
-		}
+		catch (Error e) { System.err.println(e); }
 	}
 
-	private void error(int pos, String msg) {
-		env.errorMsg.error(pos, msg);
-	}
+	private void error(int pos, String msg) { env.errorMsg.error(pos, msg); }
 
-	private Exp checkInt(ExpTy et, int pos) {
-		if (!INT.coerceTo(et.ty))
-			error(pos, "integer required");
+	private Exp checkInt(ExpTy et, int pos) 
+	{
+		if (!INT.coerceTo(et.ty)) error(pos, "integer required");
 		return et.exp;
 	}
 
 	/**
 	 * The main switchboard for transExps. We take a general expression, discover its form, and pass it along.
 	 */
-	ExpTy transExp(Absyn.Exp e) {
+	ExpTy transExp(Absyn.Exp e) 
+	{
 		debugPrint(this, "Traversing General Expression " + e);
 		debugPrint(e, "First, we determine the type of the expression.");
 		ExpTy result = null;
 
 		if (e == null) {
-			debugPrint(e, "e is null.");
+			debugPrint(e, "e is null :(");
 			return new ExpTy(null, VOID);
 		}
 		else if (e instanceof Absyn.OpExp) {
@@ -139,17 +138,16 @@ public class Semant {
 			debugPrint(e, "I'm a WhileExp!");
 			result = transExp((Absyn.WhileExp) e);
 		}
-		else
-			error(((Absyn.Absyn) e).pos, "Unsure what type of expression we're dealing with here...");
-		if (result == null) {
-			debugPrint(e, "the result from this transExp is null. Likely that we haven't implemented it yet.");
-		}
+		else error(((Absyn.Absyn) e).pos, "Unsure what type of expression we're dealing with here...");
+		if (result == null) debugPrint(e, "the result from this transExp is null. Likely that we haven't implemented it yet.");
+		
 		e.type = result.ty;
 		debugPrint(this, "expression " + e.toString() + " evaluated to " + result.toString());
 		return result;
 	}
 
-	ExpTy transExp(Absyn.OpExp e) {
+	ExpTy transExp(Absyn.OpExp e) 
+	{
 		debugPrint(this, "translating OpExp...");
 		debugPrint(e, "translate left side");
 		ExpTy left = transExp(e.left);
@@ -157,7 +155,8 @@ public class Semant {
 		ExpTy right = transExp(e.right);
 
 		// TODO implement the other operations(?)
-		switch (e.oper) {
+		switch (e.oper) 
+		{
 			case Absyn.OpExp.PLUS:
 				checkInt(left, e.left.pos);
 				checkInt(right, e.right.pos);
@@ -175,27 +174,32 @@ public class Semant {
 				checkInt(right, e.right.pos);
 				return new ExpTy(null, INT);
 			case Absyn.OpExp.NE: //In Java switch statements, finding a case without break statements will go down the list of case statements.
+			
 			case Absyn.OpExp.EQ:
-				debugPrint(e, "Checking = expr.");
+				debugPrint(e, "Checking EQUALS (EQ) expr.");
 				Type a = left.ty.actual();
 				Type b = right.ty.actual();
+
 				debugPrint(e, "Is the left an appropriate type?");
 				if (!(a instanceof Types.INT) && !(a instanceof Types.STRING) && !(a instanceof Types.NIL)
 						&& !(a instanceof Types.RECORD) && !(a instanceof Types.ARRAY)) {
 					error(((Absyn.Absyn) e).pos,
 							"Cannot use EQ with something other than int, str, nil, record or array.");
 				}
+
 				debugPrint(e, "Is the right an appropriate type?");
 				if (!(b instanceof Types.INT) && !(b instanceof Types.STRING) && !(b instanceof Types.NIL)
 						&& !(b instanceof Types.RECORD) && !(b instanceof Types.ARRAY)) {
 					error(((Absyn.Absyn) e).pos,
 							"Cannot use EQ with something other than int, str, nil, record or array.");
 				}
+
 				debugPrint(e, "Are the types the same?");
 				if (left.ty.coerceTo(right.ty) && right.ty.coerceTo(left.ty)) {
 					debugPrint(e, "Everything looks good. Returning new ExpTy.");
 				}
-				else {
+				else 
+				{
 					debugPrint(e, "Nope. Type A:" + a.toString() + " Type B: " + b.toString());
 					error(((Absyn.Absyn) e).pos, "Types not compatable in EQ operator.");
 				}
@@ -219,87 +223,105 @@ public class Semant {
 	/**
 	 * I'm pretty sure there should only be 1 let statement. Should we check for that?
 	 */
-	ExpTy transExp(Absyn.LetExp e) {
+
+	//STATUS: DONE
+	ExpTy transExp(Absyn.LetExp e) 
+	{
 		debugPrint(this, "Beginning traversal of a Let expr");
 		env.venv.beginScope(); // venv should be value environment
 		env.tenv.beginScope(); // tenc should be type environment
 		debugPrint(e, "Began a new val env and type env.");
 
 		// Iterate through the declist of this let expr
-		for (Absyn.DecList d = e.decs; d != null; d = d.tail) {
+		for (Absyn.DecList d = e.decs; d != null; d = d.tail) 
+		{
 			debugPrint(d, "Beginning new transDec of the head: " + d.head.toString());
 			transDec(d.head);
 			debugPrint(this, "continuing Let expr");
 		}
+
 		ExpTy body = transExp(e.body);
+
+		//end the scope for values/types
 		env.venv.endScope();
 		env.tenv.endScope();
+
+		debugPrint(e, "Finished traversal of a Let expr");
 		return new ExpTy(null, body.ty);
 	}
 
 
-	ExpTy transExp(Absyn.ArrayExp e) {
+	ExpTy transExp(Absyn.ArrayExp e) 
+	{
 		debugPrint(this, "Traversing ArrayExp...");
 		debugPrint(e, "Get the NAME of the expression from the type env.");
 
 		Types.NAME name = (Types.NAME) env.tenv.get(e.typ);
 
 		debugPrint(name, "Now we evalutate it to see if the NAME is an ARRAY.");
-		if (name == null) {
+		if (name == null) 
+		{
 			debugPrint(e, "The type of the array hasn't been declared yet. DUCK!!!");
 			error(((Absyn.Absyn) (e)).pos, "undeclared type: " + e.typ);
 		}
-		else {
+		else 
+		{
 			debugPrint(name, "We found the name in the tenv. So far so good.");
-		}
 
-		debugPrint(name, "name is: " + name);
-		debugPrint(e, "Get the size of the array by traversing the IntExpr.");
-		ExpTy size = transExp(e.size);
+			debugPrint(name, "name is: " + name);
+			debugPrint(e, "Get the size of the array by traversing the IntExpr.");
+			ExpTy size = transExp(e.size);
 
-		debugPrint(this, "continuing with transExp(ArrayExp).");
-		debugPrint(size, "Let's make sure this is actually an int.");
-		checkInt(size, ((Absyn.Absyn) e).pos);
+			debugPrint(this, "continuing with transExp(ArrayExp).");
+			debugPrint(size, "Let's make sure this is actually an int.");
+			checkInt(size, ((Absyn.Absyn) e).pos);
 
-		debugPrint(e, "now, we run the init part of the expression.");
-		ExpTy init = transExp(e.init);
-		debugPrint(this, "continuing with transExp(ArrayExp).");
-		debugPrint(e, "Last, we check to be sure the array's type and the elements' type match up.");
+			debugPrint(e, "now, we run the init part of the expression.");
+			ExpTy init = transExp(e.init);
+			debugPrint(this, "continuing with transExp(ArrayExp).");
+			debugPrint(e, "Last, we check to be sure the array's type and the elements' type match up.");
 
-		Type actual = name.actual(); // This got explained in class.
-		if (actual instanceof Types.ARRAY) {
-			Types.ARRAY array = (Types.ARRAY) actual;
-			if (!init.ty.coerceTo(array.element)) {
-				debugPrint(init, "type of init and type of array don't match up.");
-				error(((Absyn.Absyn) (e.init)).pos, "element type mismatch");
+
+			Type actual = name.actual(); // This got explained in class.
+			if (actual instanceof Types.ARRAY) 
+			{
+				Types.ARRAY array = (Types.ARRAY) actual;
+				if (!init.ty.coerceTo(array.element)) 
+				{
+					debugPrint(init, "type of init and type of array don't match up.");
+					error(((Absyn.Absyn) (e.init)).pos, "element type mismatch");
+				}
+				else return new ExpTy(null, name);
 			}
-			else {
-				return new ExpTy(null, name);
-			}
 		}
+		debugPrint(this, "Traversing ArrayExp is DONE!");
 		return new ExpTy(null, VOID);
 	}
 
-	// TODO fix
-	ExpTy transExp(Absyn.AssignExp e) {
+	//DONE, I Think
+	ExpTy transExp(Absyn.AssignExp e) 
+	{
 		debugPrint(this, "Traversing AssignExp...");
-		debugPrint(e, "Translating the var");
+
+		debugPrint(e, "Translating the variable");
 		ExpTy var = transVar(e.var, true);
+
 		debugPrint(this, "transExp(AssignExp): Translating the expression: " + e.exp);
 		ExpTy exp = transExp(e.exp);
-		debugPrint(this, "transExp(AssignExp): Checking to see if the types of the expression and var match");
-		if (!exp.ty.coerceTo(var.ty)) {
+
+		debugPrint(this, "transExp(AssignExp): Checking to see if the types of the expression and var match. brace yourself:");
+		if (!exp.ty.coerceTo(var.ty)) 
+		{
 			debugPrint(exp, "Nope. DUCK!!!");
 			error(((Absyn.Absyn) (e)).pos, "assignment var and expression types don't match");
 		}
-		else {
-			debugPrint(exp, "Yep.");
-		}
+		else debugPrint(exp, "Yep. We've got this.");
 		return new ExpTy(null, VOID);
 	}
 
-	// TODO test
-	ExpTy transExp(Absyn.BreakExp e) {
+	//DONE
+	ExpTy transExp(Absyn.BreakExp e) 
+	{
 		debugPrint(this, "Break expressions not allowed under normal circumstances.");
 		error(((Absyn.Absyn) (e)).pos, "Break expressions not allowed under normal circumstances.");
 		return new ExpTy(null, VOID);
@@ -533,6 +555,7 @@ public class Semant {
 		transFields(epos, f.tail, exp.tail);
 	}
 
+	//SHOULD BE GOOD
 	Exp transDec(Absyn.VarDec d) 
 	{
 		debugPrint(this, "Beggining transDec");
@@ -540,35 +563,29 @@ public class Semant {
 
 		// Get the Expression type (a class composed of an expression, and it's resulting type.)
 		ExpTy init = transExp(d.init);
-		Type type; // we determine the type in the if statement below
+		Type expType; // we determine the type in the if statement below
 		
 		if (d.typ == null) 
 		{
 			if(init.ty.coerceTo(NIL)) error(1, "transDec: VarDec type is NULL");
 			debugPrint(d, "my typ is null, pull my real type from the init data I hold.");
-			type = init.ty; // If the VarDec doesn't have a type stored yet, pull it from itself.
-			debugPrint(d, "That type is: " + type.toString());
+			expType = init.ty; // If the VarDec doesn't have a type stored yet, pull it from itself.
+			debugPrint(d, "That type is: " + expType.toString());
 		}
 		else 
 		{
 			debugPrint(d, "my typ is not null, check to be sure there's no type mismatch.");
-			type = transTy(d.typ);
+			expType = transTy(d.typ);
 
-			if (!init.ty.coerceTo(type)) 
-			{
-				debugPrint(d, "inializer type and var type don't match.");
-				error(d.pos, "assignment type and var type aren't the same!");
-			}
+			if (!init.ty.coerceTo(expType)) error(d.pos, "assignment type and var type aren't the same!");
 		}
 
 		// Store the resulting entry
 		debugPrint(d, "Storing in the env table.");
-		d.entry = new VarEntry(type);
+		d.entry = new VarEntry(expType);
 		env.venv.put(d.name, d.entry);
 		return null;
 	}
-
-	
 
 	//FIXED
 	ExpTy transVar(Absyn.Var v, boolean lhs) 
