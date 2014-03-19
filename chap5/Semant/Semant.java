@@ -62,7 +62,7 @@ public class Semant {
 
 	private Exp checkInt(ExpTy et, int pos) {
 		if (!INT.coerceTo(et.ty))
-			error(pos, "integer required");
+			error(pos, "Not an integer");
 		return et.exp;
 	}
 
@@ -350,6 +350,29 @@ public class Semant {
 		if (function instanceof FunEntry) {
 			FunEntry true_function = (FunEntry) function;
 			debugPrint(true_function, "Here's the function entry with result: " + true_function.result);
+
+			// handle args
+			debugPrint(true_function, "Scanning the formals and args for correctness.");
+			Types.RECORD formals = true_function.formals;
+			Absyn.ExpList args = e.args;
+			while (true) {
+				if (formals == null) {
+					if (args != null) {
+						debugPrint(args, "Number of args and formals don't match up. DUCK!!!");
+						error(((Absyn.Absyn) (args.head)).pos, "Number of formals and args do not match.");
+					}
+					break;
+				}
+				if (args == null) {
+					debugPrint(args.head, "missing arg for " + formals.fieldName);
+					error(((Absyn.Absyn) (args.head)).pos, "Missing argument.");
+				}
+				ExpTy exp = transExp(args.head);
+				if (!exp.ty.coerceTo(formals.fieldType))
+					error(((Absyn.Absyn) (args.head)).pos, "argument type mismatch");
+				formals = formals.tail;
+				args = args.tail;
+			}
 			return new ExpTy(null, true_function.result);
 		}
 		else {
@@ -448,24 +471,23 @@ public class Semant {
 		debugPrint(this, "Done Traversing WhileExp...");
 		return new ExpTy(null, VOID);
 	}
-	
-	//TODO fix
-	ExpTy transExp(Absyn.ForExp e)
-    {
-        ExpTy lo = transExp(e.var.init);
-        checkInt(lo, ((Absyn.Absyn) (e.var)).pos);
-        ExpTy hi = transExp(e.hi);
-        checkInt(hi, ((Absyn.Absyn) (e.hi)).pos);
-        env.venv.beginScope();
-        e.var.entry = new LoopVarEntry(INT);
-        env.venv.put(e.var.name, e.var.entry);
-        Semant loop = new LoopSemant(env);
-        ExpTy body = loop.transExp(e.body);
-        env.venv.endScope();
-        if(!body.ty.coerceTo(VOID))
-            error(((Absyn.Absyn) (e.body)).pos, "result type mismatch");
-        return new ExpTy(null, VOID);
-    }
+
+	// TODO fix
+	ExpTy transExp(Absyn.ForExp e) {
+		ExpTy lo = transExp(e.var.init);
+		checkInt(lo, ((Absyn.Absyn) (e.var)).pos);
+		ExpTy hi = transExp(e.hi);
+		checkInt(hi, ((Absyn.Absyn) (e.hi)).pos);
+		env.venv.beginScope();
+		e.var.entry = new LoopVarEntry(INT);
+		env.venv.put(e.var.name, e.var.entry);
+		Semant loop = new LoopSemant(env);
+		ExpTy body = loop.transExp(e.body);
+		env.venv.endScope();
+		if (!body.ty.coerceTo(VOID))
+			error(((Absyn.Absyn) (e.body)).pos, "result type mismatch");
+		return new ExpTy(null, VOID);
+	}
 
 	/**
 	 * This method exists to hand a general declaration. We figure out it's type, and then move to the appropriate method with a more specific decaraltion type.
@@ -526,42 +548,33 @@ public class Semant {
 
 	// TODO taken from pg 125. Build to handle multiple function declarations, void returning functions, and recursive functions
 	Exp transDec(Absyn.FunctionDec fd) {
-		/*
-		 * Hashtable hash = new Hashtable(); for(FunctionDec f = d; f != null; f = f.next) { if(hash.put(f.name, f.name) != null) error(((Absyn) (f)).pos,
-		 * "function redeclared"); RECORD fields = transTypeFields(new Hashtable(), f.params); Type type = transTy(f.result); f.entry = new FunEntry(fields,
-		 * type); env.venv.put(f.name, f.entry); } for(FunctionDec f = d; f != null; f = f.next) { env.venv.beginScope(); putTypeFields(f.entry.formals); Semant
-		 * fun = new Semant(env); ExpTy body = fun.transExp(f.body); if(!body.ty.coerceTo(f.entry.result)) error(((Absyn) (f.body)).pos,
-		 * "result type mismatch"); env.venv.endScope(); }
-		 */
-		Absyn.FunctionDec temp = fd;
-		while (temp != null) {
-			debugPrint(this, "Traversing functiondec");
-			debugPrint(fd, "Let's get the result of this function");
-			Types.Type result = transTy(fd.result);
-
-			debugPrint(this, "return to functiondec. here's the result.");
-			debugPrint(fd, "Now, let's have a look at the formals.");
-			Types.RECORD formals = transTypeFields(new java.util.Hashtable(), fd.params);
-
-			debugPrint(formals, "Here they are.");
-			FunEntry fe = new FunEntry(formals, result);
-			temp.entry = fe;
-			env.venv.put(fd.name, fe);
-			temp = temp.next;
+		java.util.Hashtable hash = new java.util.Hashtable();
+		for (Absyn.FunctionDec f = fd; f != null; f = f.next) {
+			if (hash.put(f.name, f.name) != null)
+				error(((Absyn.Absyn) (f)).pos, "function redeclared");
+			Types.RECORD fields = transTypeFields(new java.util.Hashtable(), f.params);
+			Type type = transTy(f.result);
+			f.entry = new FunEntry(fields, type);
+			env.venv.put(f.name, f.entry);
 		}
-		temp = fd;
-		while (temp != null) {
-			env.venv.beginScope(); // handle the params and function-scope vars
 
-			for (Absyn.FieldList p = fd.params; p != null; p = p.tail) {
-				env.venv.put(p.name, new VarEntry((Types.Type) env.tenv.get(p.typ)));
+		for (Absyn.FunctionDec f = fd; f != null; f = f.next) {
+			env.venv.beginScope();
+			
+			Types.RECORD rec = f.entry.formals;
+			while (rec != null) {
+				env.venv.put(rec.fieldName, new VarEntry(rec.fieldType));
+				rec = rec.tail;
 			}
-			ExpTy result = transExp(fd.body);
-			if (!result.ty.coerceTo(fd.entry.result))
-				error(((Absyn.Absyn) (fd.body)).pos, "Result type and function return type don't match.");
+			
+			Semant fun = new Semant(env);
+			ExpTy body = fun.transExp(f.body);
+			if (!body.ty.coerceTo(f.entry.result))
+				;
+			error(((Absyn.Absyn) (f.body)).pos, "result type mismatch");
 			env.venv.endScope();
-			temp = temp.next;
 		}
+
 		return null;
 	}
 
@@ -639,10 +652,13 @@ public class Semant {
 	}
 
 	ExpTy transVar(Absyn.FieldVar fv) {
+		debugPrint(fv, "Translating a field var.");
 		ExpTy var = transVar(fv.var);
 		Type actual = var.ty.actual();
+
 		if (!(actual instanceof Types.RECORD)) {
-			error(((Absyn.Absyn) (fv.var)).pos, "record required");
+			error(fv.var.pos, "this fieldVar is invalid");
+			debugPrint(fv, "so far so good on the fieldvar.");
 		}
 		else {
 			Types.RECORD field = (Types.RECORD) actual;
@@ -659,32 +675,37 @@ public class Semant {
 	ExpTy transVar(Absyn.SimpleVar v, boolean lhs) {
 		debugPrint(v, "Translating simple var.");
 		debugPrint(v, "Get entry from symbol table.");
-		Entry x = (Entry) env.venv.get(v.name);
-		debugPrint(x, "Here it is.");
-		if (x instanceof VarEntry) {
-			VarEntry ent = (VarEntry) x;
-			if (lhs && (ent instanceof LoopVarEntry))
-				error(((Absyn.Absyn) (v)).pos, "assignment to loop index");
-			return new ExpTy(null, ent.ty);
+
+		Entry ent = (Entry) env.venv.get(v.name);
+
+		debugPrint(ent, "Here it is.");
+		if (ent instanceof VarEntry) {
+			VarEntry vent = (VarEntry) ent;
+			if (lhs && (vent instanceof LoopVarEntry))
+				error(v.pos, "what the: tried to assign to a loop index");
+			return new ExpTy(null, vent.ty);
 		}
 		else {
-			error(((Absyn.Absyn) (v)).pos, "undeclared variable: " + v.name);
+			error(v.pos, v.name.toString() + "is not a declared anywhere");
 			return new ExpTy(null, VOID);
 		}
 	}
 
 	// TODO fix
 	ExpTy transVar(Absyn.SubscriptVar v) {
+		debugPrint(this, "Beginning traversal of a SubscriptVar");
 		ExpTy var = transVar(v.var);
 		ExpTy index = transExp(v.index);
 		checkInt(index, ((Absyn.Absyn) (v.index)).pos);
+
+		// make sure the type is actually an array
 		Type actual = var.ty.actual();
 		if (actual instanceof Types.ARRAY) {
 			Types.ARRAY array = (Types.ARRAY) actual;
 			return new ExpTy(null, array.element);
 		}
 		else {
-			error(((Absyn.Absyn) (v.var)).pos, "array required");
+			error(v.var.pos, "this subscript var isn't in an array somehow");
 			return new ExpTy(null, VOID);
 		}
 	}
