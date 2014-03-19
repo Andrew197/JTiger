@@ -533,24 +533,31 @@ public class Semant {
 		transFields(epos, f.tail, exp.tail);
 	}
 
-	Exp transDec(Absyn.VarDec d) {
+	Exp transDec(Absyn.VarDec d) 
+	{
 		debugPrint(this, "Beggining transDec");
 		debugPrint(d, "translate the init expression.");
+
 		// Get the Expression type (a class composed of an expression, and it's resulting type.)
 		ExpTy init = transExp(d.init);
-		debugPrint(this, "continuing transDec");
 		Type type; // we determine the type in the if statement below
-		if (d.typ == null) {
+		
+		if (d.typ == null) 
+		{
+			if(init.ty.coerceTo(NIL)) error(1, "transDec: VarDec type is NULL");
 			debugPrint(d, "my typ is null, pull my real type from the init data I hold.");
 			type = init.ty; // If the VarDec doesn't have a type stored yet, pull it from itself.
 			debugPrint(d, "That type is: " + type.toString());
 		}
-		else {
+		else 
+		{
 			debugPrint(d, "my typ is not null, check to be sure there's no type mismatch.");
 			type = transTy(d.typ);
-			if (!init.ty.coerceTo(type)) {
+
+			if (!init.ty.coerceTo(type)) 
+			{
 				debugPrint(d, "inializer type and var type don't match.");
-				error(((Absyn.Absyn) (d)).pos, "assignment type and var type do not match up");
+				error(d.pos, "assignment type and var type aren't the same!");
 			}
 		}
 
@@ -561,23 +568,23 @@ public class Semant {
 		return null;
 	}
 
-	// TODO fix
-	ExpTy transVar(Absyn.Var v) {
-		debugPrint(this, "translating var");
-		return transVar(v, false);
+	
+
+	//FIXED
+	ExpTy transVar(Absyn.Var v, boolean lhs) 
+	{
+		debugPrint(v, "route through type");
+		if (v instanceof Absyn.SimpleVar) 		return transVar((Absyn.SimpleVar) v, lhs);
+		if (v instanceof Absyn.FieldVar) 		return transVar((Absyn.FieldVar) v);
+		if (v instanceof Absyn.SubscriptVar) 	return transVar((Absyn.SubscriptVar) v);
+		else 									throw new Error("transVar: Var type is not valid");
 	}
 
-	// TODO fix
-	ExpTy transVar(Absyn.Var v, boolean lhs) {
-		debugPrint(v, "route through type");
-		if (v instanceof Absyn.SimpleVar)
-			return transVar((Absyn.SimpleVar) v, lhs);
-		if (v instanceof Absyn.FieldVar)
-			return transVar((Absyn.FieldVar) v);
-		if (v instanceof Absyn.SubscriptVar)
-			return transVar((Absyn.SubscriptVar) v);
-		else
-			throw new Error("Not a valid Var");
+	//FIXED
+	ExpTy transVar(Absyn.Var v) 
+	{
+		debugPrint(this, "translating var");
+		return transVar(v, false);
 	}
 	
 	ExpTy transVar(Absyn.FieldVar fv) {
