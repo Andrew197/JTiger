@@ -205,7 +205,7 @@ public class Semant {
 				}
 				else {
 					debugPrint(e, "Nope. Type A:" + a.toString() + " Type B: " + b.toString());
-					//Omitted for git System.out.println("Nope. Type A:" + a.toString() + " Type B: " + b.toString());
+					System.out.println("Nope. Type A:" + a.toString() + " Type B: " + b.toString());
 					error(((Absyn.Absyn) e).pos, "Types not compatable in EQ operator.");
 				}
 				return new ExpTy(null, INT);
@@ -527,11 +527,11 @@ public class Semant {
 		debugPrint(this, "Traversing typedec");
 		debugPrint(d, "Typedecs have many symbols. Let's build a list of them");
 
-		java.util.ArrayList<Symbol.Symbol> symList = new java.util.ArrayList<Symbol.Symbol>();
+		java.util.Hashtable symList = new java.util.Hashtable();
 
 		for (Absyn.TypeDec head = d; head != null; head = head.next) {
 			// ArrayList.add() will return false if the element is already present in the list.
-			if (symList.add(head.name)) {
+			if (symList.put(head.name,head.name) != null) {
 				Types.NAME name = new Types.NAME(head.name);
 				head.entry = name;
 				env.tenv.put(head.name, name);
@@ -540,6 +540,9 @@ public class Semant {
 			else {
 				debugPrint(head, "duplicate name detected!");
 				error(((Absyn.Absyn) d).pos, "Duplicate name detected in type declaration.");
+				Types.NAME name = new Types.NAME(head.name);
+				head.entry = name;
+				env.tenv.put(head.name, name);
 			}
 		}
 		// Bind the symbols we just stored to thier types.
