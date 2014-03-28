@@ -2,7 +2,8 @@ package FindEscape;
 
 import Absyn.*;
 
-public class FindEscape {
+public class FindEscape 
+{
 	Symbol.Table	escEnv	= new Symbol.Table();	// escEnv maps Symbol to Escape
 	static final boolean debug = true;
 
@@ -14,7 +15,8 @@ public class FindEscape {
 	 * Every project I've ever done for these classes benefitted enormously from this method. We pass a message and an object (for clarity.) If the messages
 	 * comes from the containing class, we'll draw a big section marker with the message.
 	 */
-	private void debugPrint(Object sender, String message) {
+	private void debugPrint(Object sender, String message) 
+	{
 		if (debug) {
 			if (sender == null) {
 				System.out.println("null -> " + message); // Null ptr exeception protection.
@@ -76,15 +78,38 @@ public class FindEscape {
 			debugPrint(e, "Is not a subclass of Exp, no method to handle.");
 	}
 	
-	void traverseExp(int depth, VarExp e) {}
+	void traverseExp(int depth, VarExp e) 
+	{
+		debugPrint(e, "I'm a VarExp!")
+		traverseVar(depth, e.var);
+	}
 	void traverseExp(int depth, CallExp e) {}
-	void traverseExp(int depth, OpExp e) {}
+
+	void traverseExp(int depth, OpExp e) 
+	{
+		//check both left and right operands
+		traverseExp(depth, e.left);
+        traverseExp(depth, e.right);
+	}
+
 	void traverseExp(int depth, RecordExp e) {}
 	void traverseExp(int depth, SeqExp e) {}
 	void traverseExp(int depth, AssignExp e) {}
-	void traverseExp(int depth, IfExp e) {}
+	
+	void traverseExp(int depth, IfExp e) 
+	{
+		debugPrint(this, "traversing an ifexp");
+		traverseExp(depth, e.test);
+        traverseExp(depth, e.thenclause);
+        traverseExp(depth, e.elseclause);
+        debugPrint(this, "done traversing an ifexp");
+	}
+
 	void traverseExp(int depth, WhileExp e) {}
-	void traverseExp(int depth, ForExp e) {}
+
+	void traverseExp(int depth, ForExp e) 
+	{
+	}
 	void traverseExp(int depth, LetExp e) {}
 	void traverseExp(int depth, ArrayExp e) {}
 	
