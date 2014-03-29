@@ -116,31 +116,67 @@ public class FindEscape {
 	}
 
 	void traverseExp(int depth, VarExp e) {
-		debugPrint(depth, e, "beginning traverseExp(VarExp) with depth = " + depth);
+		debugPrint(depth, e, "beginning traverseExp(VarExp)");
+		debugPrint(depth,e.var,"Just foward this to traverseVar()");
+		Var varFromVarExp = e.var;
+		traverseVar(depth, varFromVarExp);
 	}
 
 	void traverseExp(int depth, CallExp e) {
-		debugPrint(depth, e, "beginning traverseExp(CallExp) with depth = " + depth);
+		debugPrint(depth, e, "beginning traverseExp(CallExp) with depth");
+		
+		//If this isn't the first function to be called, it can't be a leaf function
+		if(currentFun != null){
+			debugPrint(depth,currentFun,"Not a leaf funciton.");
+			currentFun.leaf = false;
+		}
+		ExpList argList = e.args;
+		while(argList != null){
+			debugPrint(depth,argList,"traversing head of the argList");
+			traverseExp(depth,argList.head);
+			argList = argList.tail;
+		}
 	}
 	
-	//TODO Test
 	void traverseExp(int depth, OpExp e) {
 		debugPrint(depth, e, "beginning traverseExp(OpExp) with depth = " + depth);
-		//check both left and right operands
-		traverseExp(depth, e.left);
-		traverseExp(depth, e.right);
+		debugPrint(depth,e.left,"Traversing left exp from OpExp");
+		traverseExp(depth, e.left); //traverse the left operand. For example {num1} + num2
+		debugPrint(depth,e.right,"Traversing right exp from OpExp");
+		traverseExp(depth, e.right);//traverse the right. num2 in above comment
 	}
 
 	void traverseExp(int depth, RecordExp e) {
-		debugPrint(depth, e, "beginning traverseExp(RecordExp) with depth = " + depth);
+		debugPrint(depth, e, "beginning traverseExp(RecordExp)");
+		FieldExpList recordFields = e.fields;
+		debugPrint(depth,recordFields,"Begining walk of record fields.");
+		while(recordFields != null){
+			debugPrint(depth,recordFields.init,"traversing...");
+			traverseExp(depth,recordFields.init);
+			recordFields = recordFields.tail;
+		}
 	}
 
 	void traverseExp(int depth, SeqExp e) {
-		debugPrint(depth, e, "beginning traverseExp(SeqExp) with depth = " + depth);
+		debugPrint(depth, e, "beginning traverseExp(SeqExp)");
+		ExpList seqList = e.list;
+		debugPrint(depth,e.list,"Beginning traversal of seqList");
+		while(seqList!=null){
+			debugPrint(depth,seqList.head,"traversing...");
+			traverseExp(depth,seqList.head);
+			seqList = seqList.tail;
+		}
 	}
-
+	
+	/**
+	 * Here, we're going to look into the var and expression by traversing them both.
+	 */
 	void traverseExp(int depth, AssignExp e) {
-		debugPrint(depth, e, "beginning traverseExp(AssignExp) with depth = " + depth);
+		debugPrint(depth, e, "beginning traverseExp(AssignExp)");
+		debugPrint(depth,e.var,"Beginning traversal");
+		traverseVar(depth, e.var);
+		debugPrint(depth,e.exp,"Beginning traversal (From AssignExp)");
+        traverseExp(depth, e.exp);
 	}
 	
 	/**
@@ -157,21 +193,55 @@ public class FindEscape {
 	}
 
 	void traverseExp(int depth, WhileExp e) {
-		debugPrint(depth, e, "beginning traverseExp(WhileExp) with depth = " + depth);
+		debugPrint(depth, e, "beginning traverseExp(WhileExp)");
+		debugPrint(depth,e.test,"Traversing the test");
+		traverseExp(depth,e.test);
+		debugPrint(depth,e.body,"Traversing the body of the WhileExp");
+		traverseExp(depth,e.body);
 	}
 
 	void traverseExp(int depth, ForExp e) {
-		debugPrint(depth, e, "beginning traverseExp(ForExp) with depth = " + depth);
-	}
-
-	void traverseExp(int depth, LetExp e) {
-		debugPrint(depth, e, "beginning traverseExp(LetExp) with depth = " + depth);
+		debugPrint(depth, e, "beginning traverseExp(ForExp)");
+		debugPrint(depth,e.var.init,"First, we'll look at the varible's statement");
+		traverseExp(depth, e.var.init);
+		
+		debugPrint(depth,e.hi,"Next, we look at the for loop's hi statement");
+        traverseExp(depth, e.hi);
+        
+        debugPrint(depth,e.var,"Finally, we'll take the varible, toss it in the scope, and eval the function body.");
+        escEnv.beginScope();
+        escEnv.put(e.var.name, new VarEscape(depth, e.var));
+        traverseExp(depth, e.body);
+        escEnv.endScope();
 	}
 	
-	//TODO Fix
+	/**
+	 * We're just walking the LetExp here and putting everything in the scope for analysis.
+	 */
+	void traverseExp(int depth, LetExp e) {
+		debugPrint(depth, e, "beginning traverseExp(LetExp)");
+		escEnv.beginScope();
+		
+		DecList letDecs = e.decs;
+		debugPrint(depth,letDecs,"Beginning traversal of letDecs");
+		while(letDecs != null){
+			traverseDec(depth,letDecs.head);
+			letDecs = letDecs.tail;
+		}
+		
+		debugPrint(depth,e.body,"Beginning traversal of let body");
+        traverseExp(depth, e.body);
+        escEnv.endScope();
+	}
+	
+	/**
+	 * We just need to traverse the size expression and the init exp
+	 */
 	void traverseExp(int depth, ArrayExp e) {
 		debugPrint(depth, e, "beginning traverseExp(AeeayExp) with depth = " + depth);
+		debugPrint(depth,e.size,"Traversing...");
 		traverseExp(depth, e.size);
+		debugPrint(depth,e.init,"Looking into the arrayExp's init statement");
         traverseExp(depth, e.init);
 	}
 
