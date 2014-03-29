@@ -1,14 +1,19 @@
 package Semant;
+import Absyn.FieldList;
 import Translate.Exp;
 import Translate.Access;
 import Types.Type;
 import java.util.Hashtable;
 import Translate.Level;
+import FindEscape.FindEscape;
+import Util.BoolList;
+import Symbol.Symbol;
+import Translate.AccessList;
 
 public class Semant 
 {
   Env env;
-  Level level;
+  Translate.Level level;
   FindEscape fe;
 
   public Semant(Frame.Frame frame, ErrorMsg.ErrorMsg err)
@@ -24,8 +29,8 @@ public class Semant
   public void transProg(Absyn.Exp exp) 
   {
     //TODO: CHECK THIS
-    fe = new FindEscape(exp);
-    level = new Level(level, Symbol.symbol("TRANSPROG"), null);
+    new FindEscape(exp);
+    level = new Level(level, Symbol.symbol("tigermain"), null);
     transExp(exp);
   }
 
@@ -439,7 +444,7 @@ public class Semant
     // 2nd pass - handles the function bodies
     for (Absyn.FunctionDec f = d; f != null; f = f.next) {
       env.venv.beginScope();
-      putTypeFields(f.entry.formals);
+      putTypeFields(f.entry.formals, f.entry.level.formals);
       Semant fun = new Semant(env, f.entry.level);
       ExpTy body = fun.transExp(f.body);
       if (!body.ty.coerceTo(f.entry.result))
@@ -464,7 +469,7 @@ public class Semant
     if (f == null)
       return;
     env.venv.put(f.fieldName, new VarEntry(aList.head, f.fieldType));
-    putTypeFields(f.tail);
+    putTypeFields(f.tail, aList.tail);
   }
 
   Type transTy(Absyn.Ty t) {

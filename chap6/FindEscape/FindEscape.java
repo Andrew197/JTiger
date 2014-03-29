@@ -80,7 +80,7 @@ public class FindEscape
 	
 	void traverseExp(int depth, VarExp e) 
 	{
-		debugPrint(e, "I'm a VarExp!")
+		debugPrint(e, "I'm a VarExp!");
 		traverseVar(depth, e.var);
 	}
 	void traverseExp(int depth, CallExp e) {}
@@ -99,6 +99,7 @@ public class FindEscape
 	void traverseExp(int depth, IfExp e) 
 	{
 		debugPrint(this, "traversing an ifexp");
+
 		traverseExp(depth, e.test);
         traverseExp(depth, e.thenclause);
         traverseExp(depth, e.elseclause);
@@ -111,13 +112,18 @@ public class FindEscape
 	{
 	}
 	void traverseExp(int depth, LetExp e) {}
-	void traverseExp(int depth, ArrayExp e) {}
+	void traverseExp(int depth, ArrayExp e) 
+	{
+		//something seems off with this
+        traverseExp(depth, e.size);
+	}
 	
 
 	/**
 	 * acts as a switch statement for subclasses of Absyn.Dec
 	 */
 	void traverseDec(int depth, Dec d) {
+		//what type of dec is this?
 		if (d instanceof VarDec)
 			traverseDec(depth, (VarDec) d);
 		else if (d instanceof FunctionDec)
