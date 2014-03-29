@@ -7,6 +7,8 @@ import Temp.Label;
 import Frame.Frame;
 import Frame.Access;
 import Frame.AccessList;
+import Util.BoolList;
+
 
 public class MipsFrame extends Frame 
 {

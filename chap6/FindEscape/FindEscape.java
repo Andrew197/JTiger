@@ -9,7 +9,7 @@ import Absyn.*;
 public class FindEscape {
 	Symbol.Table				escEnv		= new Symbol.Table();
 	private FunctionDec			currentFun	= null;						// We have to store the current function we're examining from the global sense
-	privates static final boolean	debug		= true;					// we'll make this public so that it's visible from everywhere.
+	private static final boolean	debug		= true;					// we'll make this public so that it's visible from everywhere.
 
 	public FindEscape(Exp e) {
 		debugPrint(0, this, "begin!");
