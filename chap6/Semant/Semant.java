@@ -29,8 +29,8 @@ public class Semant
   public void transProg(Absyn.Exp exp) 
   {
     //TODO: CHECK THIS
-    new FindEscape(exp);
-    level = new Level(level, Symbol.symbol("tigermain"), null);
+    fe = new FindEscape(exp);
+    level = new Level(level, Symbol.symbol("TRANSPROG"), null);
     transExp(exp);
   }
 
@@ -429,7 +429,8 @@ public class Semant
     return null;
   }
 
-  Exp transDec(Absyn.FunctionDec d) {
+  Exp transDec(Absyn.FunctionDec d) 
+  {
     // 1st pass - handles the function headers
     Hashtable hash = new Hashtable();
     for (Absyn.FunctionDec f = d; f != null; f = f.next) {
@@ -437,8 +438,10 @@ public class Semant
         error(f.pos, "function redeclared");
       Types.RECORD fields = transTypeFields(new Hashtable(), f.params);
       Type type = transTy(f.result);
-      f.entry = new FunEntry(fields, type);
+      
       Level fdLevel = new Level(level, f.name, checkEscape(f.params), f.leaf);
+      f.entry = new FunEntry(fdLevel, fields, type);
+
       env.venv.put(f.name, f.entry);
     }
     // 2nd pass - handles the function bodies
