@@ -25,6 +25,7 @@ public class MipsFrame extends Frame
       else
       {
         //found an escaper, so we'll use an inFrame instead
+        //using an offset of 4, since that is our word size
         formalOffset -= 4;
         return new InFrame(formalOffset);
       }
@@ -36,7 +37,7 @@ public class MipsFrame extends Frame
     Label label;
 
     if (name == null)             label = new Label();
-    else if (this.name != null)   label = new Label(this.name + "." + name + "." + count++);
+    else if (super.name != null)   label = new Label(super.name + "." + name + "." + count++);
     else                          label = new Label(name);
     
     return new MipsFrame(label, formals);
@@ -48,17 +49,18 @@ public class MipsFrame extends Frame
     formalOffset = 0;
   }
   
-  //fron Frame.java: formals is type AccessList
+  //from Frame.java: formals is type AccessList
   private AccessList allocateFormalParameters(int offset, BoolList formals)
     {
         Access al;
-        if(formals == null) return null;
+        if(formals == null)      return null;
+        //System.Out.Println(offset);
 
         //nothing escaped
-        if(formals.head)    al = new InFrame(offset);
-
+        else if(formals.head)    al = new InFrame(offset);
+        //System.Out.Println("INREG => formalshead null");
         //escaped case
-        else                al = new InReg(new Temp());
+        else                     al = new InReg(new Temp());
 
         return new AccessList(al, allocateFormalParameters(offset + 4, formals.tail));
     }
@@ -66,8 +68,11 @@ public class MipsFrame extends Frame
 
   private MipsFrame(Label n, Util.BoolList f) 
   {
+    //initialize everything
     formalOffset = 0;
-    name = n;
+
+    //nullPtrexception - FIXED
+    super.name = n;
     count = 0;
 
     //allocate the formals in Frame
