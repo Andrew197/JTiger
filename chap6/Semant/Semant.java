@@ -10,6 +10,7 @@ import Util.BoolList;
 import Symbol.Symbol;
 import Translate.AccessList;
 
+//I think this is done
 public class Semant 
 {
   Env env;
@@ -395,8 +396,8 @@ public class Semant
       if (!init.ty.coerceTo(type))
 	error(d.pos, "assignment type mismatch");
     }
-    Translate.Access access = level.allocLocal(d.escape);
-    d.entry = new VarEntry(access, type);
+    Translate.Access vdAccess = level.allocLocal(d.escape);
+    d.entry = new VarEntry(vdAccess, type);
     env.venv.put(d.name, d.entry);
     return null;
   }
