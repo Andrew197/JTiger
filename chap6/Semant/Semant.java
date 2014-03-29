@@ -1,5 +1,6 @@
 package Semant;
 import Translate.Exp;
+import Translate.Access;
 import Types.Type;
 import java.util.Hashtable;
 import Translate.Level;
@@ -8,6 +9,7 @@ public class Semant
 {
   Env env;
   Level level;
+  FindEscape fe;
 
   public Semant(Frame.Frame frame, ErrorMsg.ErrorMsg err)
   {
@@ -21,7 +23,9 @@ public class Semant
 
   public void transProg(Absyn.Exp exp) 
   {
-    //TODO: EDIT THIS
+    //TODO: CHECK THIS
+    fe = new FindEscape(exp);
+    level = new Level(level, Symbol.symbol("TRANSPROG"), null);
     transExp(exp);
   }
 
@@ -29,6 +33,12 @@ public class Semant
   {
     env.errorMsg.error(pos, msg);
   }
+
+    private BoolList checkEscape(FieldList f)
+    {
+        if(f == null)     return null;
+        else              return new BoolList(f.escape, checkEscape(f.tail));
+    }
 
   static final Types.VOID   VOID   = new Types.VOID();
   static final Types.INT    INT    = new Types.INT();
@@ -309,7 +319,10 @@ public class Semant
     ExpTy hi = transExp(e.hi);
     checkInt(hi, e.hi.pos);
     env.venv.beginScope();
-    e.var.entry = new LoopVarEntry(INT);
+
+    Translate.Access forAccess = level.allocLocal(e.var.escape);
+
+    e.var.entry = new LoopVarEntry(forAccess, INT);
     env.venv.put(e.var.name, e.var.entry);
     Semant loop = new LoopSemant(env, level);
     ExpTy body = loop.transExp(e.body);
@@ -377,6 +390,7 @@ public class Semant
       if (!init.ty.coerceTo(type))
 	error(d.pos, "assignment type mismatch");
     }
+    Translate.Access access = level.allocLocal(d.escape);
     d.entry = new VarEntry(type);
     env.venv.put(d.name, d.entry);
     return null;
@@ -419,6 +433,7 @@ public class Semant
       Types.RECORD fields = transTypeFields(new Hashtable(), f.params);
       Type type = transTy(f.result);
       f.entry = new FunEntry(fields, type);
+      Level fdLevel = new Level(level, f.name, checkEscape(f.params), f.leaf);
       env.venv.put(f.name, f.entry);
     }
     // 2nd pass - handles the function bodies
