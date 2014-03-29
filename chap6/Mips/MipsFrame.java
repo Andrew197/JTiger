@@ -37,7 +37,7 @@ public class MipsFrame extends Frame
     Label label;
 
     if (name == null)             label = new Label();
-    else if (super.name != null)   label = new Label(super.name + "." + name + "." + count++);
+    else if (this.name != null)   label = new Label(this.name + "." + name + "." + count++);
     else                          label = new Label(name);
     
     return new MipsFrame(label, formals);
@@ -72,7 +72,7 @@ public class MipsFrame extends Frame
     formalOffset = 0;
 
     //nullPtrexception - FIXED
-    super.name = n;
+    this.name = n;
     count = 0;
 
     //allocate the formals in Frame
