@@ -4,22 +4,29 @@ import Types.Type;
 import java.util.Hashtable;
 import Translate.Level;
 
-public class Semant {
+public class Semant 
+{
   Env env;
   Level level;
-  public Semant(Frame.Frame frame, ErrorMsg.ErrorMsg err) {
+
+  public Semant(Frame.Frame frame, ErrorMsg.ErrorMsg err)
+  {
     this(new Env(err), new Level(frame));
   }
-  Semant(Env e, Level l) {
+  Semant(Env e, Level l) 
+  {
     env = e;
     level = l;
   }
 
-  public void transProg(Absyn.Exp exp) {
+  public void transProg(Absyn.Exp exp) 
+  {
+    //TODO: EDIT THIS
     transExp(exp);
   }
 
-  private void error(int pos, String msg) {
+  private void error(int pos, String msg) 
+  {
     env.errorMsg.error(pos, msg);
   }
 
@@ -139,7 +146,8 @@ public class Semant {
     return new ExpTy(null, VOID);
   }
 
-  ExpTy transVar(Absyn.SubscriptVar v) {
+  ExpTy transVar(Absyn.SubscriptVar v) 
+  {
     ExpTy var = transVar(v.var);
     ExpTy index = transExp(v.index);
     checkInt(index, v.index.pos);
