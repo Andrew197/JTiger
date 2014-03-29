@@ -391,7 +391,7 @@ public class Semant
 	error(d.pos, "assignment type mismatch");
     }
     Translate.Access access = level.allocLocal(d.escape);
-    d.entry = new VarEntry(type);
+    d.entry = new VarEntry(access, type);
     env.venv.put(d.name, d.entry);
     return null;
   }
@@ -460,10 +460,10 @@ public class Semant
     return new Types.RECORD(f.name, name, transTypeFields(hash, f.tail));
   }
 
-  private void putTypeFields (Types.RECORD f) {
+  private void putTypeFields (Types.RECORD f, AccessList aList) {
     if (f == null)
       return;
-    env.venv.put(f.fieldName, new VarEntry(f.fieldType));
+    env.venv.put(f.fieldName, new VarEntry(aList.head, f.fieldType));
     putTypeFields(f.tail);
   }
 
