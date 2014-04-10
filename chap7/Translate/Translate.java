@@ -37,15 +37,15 @@ public class Translate
   private static Tree.Exp TEMP(Temp temp) {
     return new Tree.TEMP(temp);
   }
-  private static Tree.Exp BINOP(int binop, Tree.Exp left, Tree.Exp right) {
+
+  private static Tree.Exp BINOP(int binop, Tree.Exp left, Tree.Exp right) 
+  {
     return new Tree.BINOP(binop, left, right);
   }
   private static Tree.Exp MEM(Tree.Exp exp) {
     return new Tree.MEM(exp);
   }
-  private static Tree.Exp CALL(Tree.Exp func, Tree.ExpList args) {
-    return new Tree.CALL(func, args);
-  }
+  private static Tree.Exp CALL(Tree.Exp func, Tree.ExpList args) { return new Tree.CALL(func, args); }
   private static Tree.Exp ESEQ(Tree.Stm stm, Tree.Exp exp) {
     if (stm == null)
       return exp;
@@ -162,8 +162,9 @@ public class Translate
     return Error();
   }
 
-  public Exp AssignExp(Exp lhs, Exp rhs) {
-    return Error();
+  public Exp AssignExp(Exp lhs, Exp rhs) 
+  {
+    return new Nx(MOVE(lhs.unEx(), rhs.unEx()));
   }
 
   public Exp IfExp(Exp cc, Exp aa, Exp bb) {
@@ -182,15 +183,14 @@ public class Translate
     return Error();
   }
 
-  public Exp BreakExp(Label done) {
-    return Error();
-  }
+  public Exp BreakExp(Label done) { return new Nx(JUMP(done)); }
 
   public Exp LetExp(ExpList lets, Exp body) {
     return Error();
   }
 
-  public Exp ArrayExp(Exp size, Exp init) {
+  public Exp ArrayExp(Exp size, Exp init) 
+  {
     return Error();
   }
 
