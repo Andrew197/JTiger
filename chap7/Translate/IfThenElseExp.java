@@ -6,10 +6,7 @@ import Temp.Label;
 
 class IfThenElseExp extends Exp 
 {
-  /**
-   * Every project I've ever done for these classes benefitted enormously from this method. We pass a message and an object (for clarity.) If the messages
-   * comes from the containing class, we'll draw a big section marker with the message.
-   */
+
   private void debugPrint(int depth, Object sender, String message) 
   {
     if (debug) 
@@ -20,7 +17,7 @@ class IfThenElseExp extends Exp
     }
   }
 
-
+  //globals
   Exp cond, a, b;
   Label t = new Label();
   Label f = new Label();
@@ -33,23 +30,27 @@ class IfThenElseExp extends Exp
     b = bb;
   }
 
+  Tree.Stm fixJump(Tree.Stm stm, int tb)
+  {
+    JUMP jump = (JUMP)stm;
+    if(jump.exp instanceof NAME)
+    {
+      NAME name = (NAME)jump.exp;
+      stm = null;
+      if (tb == 1) t = name.label;
+      else         f = name.label;
+    }
+    return stm;  
+  }
+
   Tree.Stm unCx(Label tt, Label ff) 
   {
     Tree.Stm aStm = a.unCx(tt, ff);
     Tree.Stm bStm = b.unCx(tt, ff);
+    if(aStm instanceof JUMP) aStm = fixJump(aStm, 1);
+    if(bStm instanceof JUMP) bStm = fixJump(bStm, 0);
+
     Tree.Stm condStm = cond.unCx(t, f);
-
-    if(aStm instanceof JUMP)
-    {
-        JUMP aJump = (JUMP)aStm;
-        if(aJump.exp instanceof NAME)
-        {
-            NAME aName = (NAME)aJump.exp;
-            aStm = null;
-            t = aName.label;
-        }
-    }
-
     if (aStm == null && bStm == null) return condStm;
     if (aStm == null)                 return new Tree.SEQ(condStm, new Tree.SEQ(new Tree.LABEL(f), bStm));
     if (bStm == null)                 return new Tree.SEQ(condStm, new Tree.SEQ(new Tree.LABEL(t), aStm));
@@ -58,8 +59,14 @@ class IfThenElseExp extends Exp
 
   Tree.Exp unEx() 
   {
-    // You must implement this function
-    return new Tree.CONST(0);
+    Exp aExp = a.unEx();
+    if(aExp == null) return null;
+
+    Exp bExp = b.unEx();
+    if(bExp == null) return null;
+
+    //what?
+    //return new Tree.CONST(0);
   }
 
   Tree.Stm unNx() 
