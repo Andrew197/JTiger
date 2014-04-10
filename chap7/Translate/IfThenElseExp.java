@@ -6,23 +6,24 @@ import Temp.Label;
 
 class IfThenElseExp extends Exp 
 {
-
-  private void debugPrint(int depth, Object sender, String message) 
-  {
-    if (debug) 
-    {
-      if (sender == null)                  System.out.println(Integer.toString(depth) + ": null -> " + message);
-      if (!(sender instanceof FindEscape)) System.out.println(Integer.toString(depth) + ": " + sender.getClass().toString().substring(6) + "-> " + message);
-      else                                 System.out.println("\n*************** " + message.toUpperCase() + " ***************");
-    }
-  }
-
   //globals
   Exp cond, a, b;
   Label t = new Label();
   Label f = new Label();
   Label join = new Label();
 
+  //debug tools
+  private void debugPrint(int depth, Object sender, String message) 
+  {
+    if (debug) 
+    {
+      if (sender == null)                  System.out.println(": null -> " + message);
+      if (!(sender instanceof Translate))  System.out.println(": " + sender.getClass().toString().substring(6) + "-> " + message);
+      else                                 System.out.println("\n*************** " + message.toUpperCase() + " ***************");
+    }
+  }
+
+  //constructor
   IfThenElseExp(Exp cc, Exp aa, Exp bb) 
   {
     cond = cc; 
@@ -67,11 +68,28 @@ class IfThenElseExp extends Exp
 
     //what?
     //return new Tree.CONST(0);
+
+    //return INTERMEDIATE CODE HERE
   }
 
   Tree.Stm unNx() 
   {
-    // You must implement this function
+    Stm aStm, bStm;
+
+    aStm = a.unNX();
+    bStm = b.unNx();
+
+    if (aStm == null) t = join;
+    else aStm = new SEQ(new SEQ(new LABEL(t), aStm), new JUMP(join));
+
+    if  (bStm == null) f = join;
+    else bStm = new SEQ(new SEQ(new LABEL(f), bStm), new JUMP(join));
+
+    if(aStm == null && bStm == null) return cond.unNx();
+    else
+    {
+      //do something
+    }
     return null;
   }
 }
