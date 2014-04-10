@@ -1,31 +1,32 @@
 package Translate;
+
 import Symbol.Symbol;
 import Tree.BINOP;
 import Tree.CJUMP;
 import Temp.Temp;
 import Temp.Label;
 
-public class Translate {
+public class Translate 
+{
   public Frame.Frame frame;
-  public Translate(Frame.Frame f) {
-    frame = f;
-  }
+  public Translate(Frame.Frame f) { frame = f; }
   private Frag frags;
-  public void procEntryExit(Level level, Exp body) {
+
+  public void procEntryExit(Level level, Exp body) 
+  {
     Frame.Frame myframe = level.frame;
     Tree.Exp bodyExp = body.unEx();
     Tree.Stm bodyStm;
-    if (bodyExp != null)
-      bodyStm = MOVE(TEMP(myframe.RV()), bodyExp);
-    else
-      bodyStm = body.unNx();
+
+    if (bodyExp != null)  bodyStm = MOVE(TEMP(myframe.RV()), bodyExp);
+    else                  bodyStm = body.unNx();
+
     ProcFrag frag = new ProcFrag(myframe.procEntryExit1(bodyStm), myframe);
     frag.next = frags;
     frags = frag;
   }
-  public Frag getResult() {
-    return frags;
-  }
+
+  public Frag getResult() { return frags; }
 
   private static Tree.Exp CONST(int value) {
     return new Tree.CONST(value);
@@ -169,8 +170,12 @@ public class Translate {
     return Error();
   }
 
-  public Exp WhileExp(Exp test, Exp body, Label done) {
-    return Error();
+  public Exp WhileExp(Exp test, Exp body, Label done) 
+  {
+    Label lab1 = new Label();
+    Label lab2 = new Label();
+    Nx retVal = new Nx(SEQ(SEQ(SEQ(LABEL(lab1), test.unCx(lab2, done)), SEQ(SEQ(LABEL(lab2), body.unNx()), JUMP(lab1))), LABEL(done)));  
+    return retVal;
   }
 
   public Exp ForExp(Access i, Exp lo, Exp hi, Exp body, Label done) {
