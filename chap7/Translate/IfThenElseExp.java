@@ -65,11 +65,14 @@ class IfThenElseExp extends Exp
 
     Exp bExp = b.unEx();
     if(bExp == null) return null;
-
-    //what?
-    //return new Tree.CONST(0);
-
-    //return INTERMEDIATE CODE HERE
+    else 
+    {
+      //nothing's null, we're good here.
+      Temp temporary;
+      ESEQ retVal;
+      retVal = new ESEQ(new SEQ(new SEQ(cond.unCx(t, f), new SEQ(new SEQ(new LABEL(t), new SEQ(new MOVE(new TEMP(r), aExp), new JUMP(join))), new SEQ(new LABEL(f), new SEQ(new MOVE(new TEMP(r), bExp), new JUMP(join))))), new LABEL(join)), new TEMP(r));
+      return retVal;
+    }
   }
 
   Tree.Stm unNx() 
@@ -84,12 +87,14 @@ class IfThenElseExp extends Exp
 
     if  (bStm == null) f = join;
     else bStm = new SEQ(new SEQ(new LABEL(f), bStm), new JUMP(join));
-
+  
     if(aStm == null && bStm == null) return cond.unNx();
     else
     {
-      //do something
+      Stm stm = cond.unCx(t, f);
+      if(aStm == null)       return new SEQ(new SEQ(stm, bStm), new LABEL(join));
+      else if(bStm == null)  return new SEQ(new SEQ(stm, aStm), new LABEL(join));
+      else                   return new SEQ(new SEQ(stm, new SEQ(aStm, bStm)), new LABEL(join));
     }
-    return null;
   }
 }
