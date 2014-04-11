@@ -130,7 +130,23 @@ public class Translate
   public Exp FunExp(Level f, ExpList args, Level from) { return new Ex(CallExp(f, args, from)); }
   public Exp ProcExp(Symbol f, ExpList args, Level from) { return new Nx(UEXP(CallExp(f, args, from)));}
   public Exp ProcExp(Level f, ExpList args, Level from) { return new Nx(UEXP(CallExp(f, args, from))); }
-  public Exp OpExp(int op, Exp left, Exp right) { return Error(); }
+  
+  public Exp OpExp(int op, Exp left, Exp right) 
+  {
+    switch(op)
+    {
+      case 0: return new Ex(BINOP(0, left.unEx(), right.unEx()));
+      case 1: return new Ex(BINOP(1, left.unEx(), right.unEx()));
+      case 2: return new Ex(BINOP(2, left.unEx(), right.unEx()));
+      case 3: return new Ex(BINOP(3, left.unEx(), right.unEx()));
+      case 4: return new RelCx(0,    left.unEx(), right.unEx());
+      case 5: return new RelCx(1,    left.unEx(), right.unEx());
+      case 6: return new RelCx(2,    left.unEx(), right.unEx());
+      case 7: return new RelCx(4,    left.unEx(), right.unEx());
+      case 8: return new RelCx(3,    left.unEx(), right.unEx());
+      case 9: return new RelCx(5,    left.unEx(), right.unEx());
+    }
+  }
 
   public Exp StrOpExp(int op, Exp left, Exp right) {
     return Error();
