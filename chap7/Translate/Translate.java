@@ -30,14 +30,13 @@ public class Translate
 
   //Holy One Liners, batman!
   public Frag getResult() { return frags; }
-  private static Tree.Exp CONST(int value)   { return new Tree.CONST(value); }
-  private static Tree.Exp NAME(Label label)  { return new Tree.NAME(label);  }
-  private static Tree.Exp TEMP(Temp temp)    { return new Tree.TEMP(temp);   }
-  private static Tree.Exp MEM(Tree.Exp exp)  { return new Tree.MEM(exp);     }
-  private static Tree.Stm UEXP(Tree.Exp exp) { return new Tree.UEXP(exp);    }
-  private static Tree.Stm JUMP(Label target) { return new Tree.JUMP(target); }
-  private static Tree.Stm LABEL(Label label) { return new Tree.LABEL(label); }
-  
+  private static Tree.Exp CONST(int value)                { return new Tree.CONST(value); }
+  private static Tree.Exp NAME(Label label)               { return new Tree.NAME(label);  }
+  private static Tree.Exp TEMP(Temp temp)                 { return new Tree.TEMP(temp);   }
+  private static Tree.Exp MEM(Tree.Exp exp)               { return new Tree.MEM(exp);     }
+  private static Tree.Stm UEXP(Tree.Exp exp)              { return new Tree.UEXP(exp);    }
+  private static Tree.Stm JUMP(Label target)              { return new Tree.JUMP(target); }
+  private static Tree.Stm LABEL(Label label)              { return new Tree.LABEL(label); }
   public  Exp NilExp()                                    { return new Ex(CONST(0)); }
   public  Exp IntExp(int value)                           { return new Ex(CONST(value)); }
   public  Exp AssignExp(Exp lhs, Exp rhs)                 { return new Nx(MOVE(lhs.unEx(), rhs.unEx())); }
