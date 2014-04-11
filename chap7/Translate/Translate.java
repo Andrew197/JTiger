@@ -30,27 +30,26 @@ public class Translate
 
   //Holy One Liners, batman!
   public Frag getResult() { return frags; }
-  private static Tree.Exp CONST(int value)                { return new Tree.CONST(value); }
-  private static Tree.Exp NAME(Label label)               { return new Tree.NAME(label);  }
-  private static Tree.Exp TEMP(Temp temp)                 { return new Tree.TEMP(temp);   }
-  private static Tree.Exp MEM(Tree.Exp exp)               { return new Tree.MEM(exp);     }
-  private static Tree.Stm UEXP(Tree.Exp exp)              { return new Tree.UEXP(exp);    }
-  private static Tree.Stm JUMP(Label target)              { return new Tree.JUMP(target); }
-  private static Tree.Stm LABEL(Label label)              { return new Tree.LABEL(label); }
-  public  Exp NilExp()                                    { return new Ex(CONST(0)); }
-  public  Exp IntExp(int value)                           { return new Ex(CONST(value)); }
-  public  Exp AssignExp(Exp lhs, Exp rhs)                 { return new Nx(MOVE(lhs.unEx(), rhs.unEx())); }
-  public  Exp BreakExp(Label done)                        { return new Nx(JUMP(done)); }
-  public  Exp IfExp(Exp cc, Exp aa, Exp bb)               { return new IfThenElseExp(cc, aa, bb); }
-  public  Exp TypeDec()                                   { return new Nx(null); }
-  public  Exp FunctionDec()                               { return new Nx(null); }
-  public  Exp Error()                                     { return new Ex(CONST(0)); }
-  public  Exp FunExp(Symbol f, ExpList args, Level from)  { return new Ex(CallExp(f, args, from)); }
-  public  Exp FunExp(Level f, ExpList args, Level from)   { return new Ex(CallExp(f, args, from)); }
-  public  Exp ProcExp(Symbol f, ExpList args, Level from) { return new Nx(UEXP(CallExp(f, args, from)));}
-  public  Exp ProcExp(Level f, ExpList args, Level from)  { return new Nx(UEXP(CallExp(f, args, from))); }
-  private Exp CallExp(Symbol f, ExpList args, Level from) { return frame.externalCall(f.toString(), ExpList(args)); }
-
+  private static Tree.Exp CONST(int value)                                           { return new Tree.CONST(value); }
+  private static Tree.Exp NAME(Label label)                                          { return new Tree.NAME(label);  }
+  private static Tree.Exp TEMP(Temp temp)                                            { return new Tree.TEMP(temp);   }
+  private static Tree.Exp MEM(Tree.Exp exp)                                          { return new Tree.MEM(exp);     }
+  private static Tree.Stm UEXP(Tree.Exp exp)                                         { return new Tree.UEXP(exp);    }
+  private static Tree.Stm JUMP(Label target)                                         { return new Tree.JUMP(target); }
+  private static Tree.Stm LABEL(Label label)                                         { return new Tree.LABEL(label); }
+  public  Exp NilExp()                                                               { return new Ex(CONST(0)); }
+  public  Exp IntExp(int value)                                                      { return new Ex(CONST(value)); }
+  public  Exp AssignExp(Exp lhs, Exp rhs)                                            { return new Nx(MOVE(lhs.unEx(), rhs.unEx())); }
+  public  Exp BreakExp(Label done)                                                   { return new Nx(JUMP(done)); }
+  public  Exp IfExp(Exp cc, Exp aa, Exp bb)                                          { return new IfThenElseExp(cc, aa, bb); }
+  public  Exp TypeDec()                                                              { return new Nx(null); }
+  public  Exp FunctionDec()                                                          { return new Nx(null); }
+  public  Exp Error()                                                                { return new Ex(CONST(0)); }
+  public  Exp FunExp(Symbol f, ExpList args, Level from)                             { return new Ex(CallExp(f, args, from)); }
+  public  Exp FunExp(Level f, ExpList args, Level from)                              { return new Ex(CallExp(f, args, from)); }
+  public  Exp ProcExp(Symbol f, ExpList args, Level from)                            { return new Nx(UEXP(CallExp(f, args, from)));}
+  public  Exp ProcExp(Level f, ExpList args, Level from)                             { return new Nx(UEXP(CallExp(f, args, from))); }
+  private Exp CallExp(Symbol f, ExpList args, Level from)                            { return frame.externalCall(f.toString(), ExpList(args)); }
   private static Tree.Exp CALL(Tree.Exp func, Tree.ExpList args)                     { return new Tree.CALL(func, args); }
   private static Tree.Stm MOVE(Tree.Exp dst, Tree.Exp src)                           { return new Tree.MOVE(dst, src); }
   private static Tree.Exp BINOP(int binop, Tree.Exp left, Tree.Exp right)            { return new Tree.BINOP(binop, left, right); }
