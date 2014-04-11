@@ -28,7 +28,8 @@ public class Translate
 
   public Frag getResult() { return frags; }
 
-  private static Tree.Exp CONST(int value) {
+  private static Tree.Exp CONST(int value) 
+  {
     return new Tree.CONST(value);
   }
   private static Tree.Exp NAME(Label label) {
@@ -52,25 +53,16 @@ public class Translate
     return new Tree.ESEQ(stm, exp);
   }
 
-  private static Tree.Stm MOVE(Tree.Exp dst, Tree.Exp src) {
-    return new Tree.MOVE(dst, src);
-  }
-  private static Tree.Stm UEXP(Tree.Exp exp) {
-    return new Tree.UEXP(exp);
-  }
-  private static Tree.Stm JUMP(Label target) {
-    return new Tree.JUMP(target);
-  }
-  private static
-  Tree.Stm CJUMP(int relop, Tree.Exp l, Tree.Exp r, Label t, Label f) {
-    return new Tree.CJUMP(relop, l, r, t, f);
-  }
-  private static Tree.Stm SEQ(Tree.Stm left, Tree.Stm right) {
-    if (left == null)
-      return right;
-    if (right == null)
-      return left;
-    return new Tree.SEQ(left, right);
+  private static Tree.Stm MOVE(Tree.Exp dst, Tree.Exp src) { return new Tree.MOVE(dst, src); }
+  private static Tree.Stm UEXP(Tree.Exp exp) { return new Tree.UEXP(exp); }
+  private static Tree.Stm JUMP(Label target) { return new Tree.JUMP(target); }
+  private static Tree.Stm CJUMP(int relop, Tree.Exp l, Tree.Exp r, Label t, Label f) { return new Tree.CJUMP(relop, l, r, t, f); }
+
+  private static Tree.Stm SEQ(Tree.Stm left, Tree.Stm right) 
+  {
+    if      (left  == null)      return right;
+    else if (right == null)      return left;
+    else                         return new Tree.SEQ(left, right);
   }
   private static Tree.Stm LABEL(Label label) {
     return new Tree.LABEL(label);
@@ -96,7 +88,8 @@ public class Translate
     return Error();
   }
 
-  public Exp FieldVar(Exp record, int index) {
+  public Exp FieldVar(Exp record, int index) 
+  {
     return Error();
   }
 
@@ -104,12 +97,12 @@ public class Translate
     return Error();
   }
 
-  public Exp NilExp() {
-    return Error();
-  }
+  public Exp NilExp() { return new Ex(CONST(0)); }
 
-  public Exp IntExp(int value) {
-    return Error();
+
+  public Exp IntExp(int value) 
+  {
+    return new Ex(CONST(value));
   }
 
   private java.util.Hashtable strings = new java.util.Hashtable();
@@ -133,33 +126,37 @@ public class Translate
     throw new Error("Translate.CallExp unimplemented");
   }
 
-  public Exp FunExp(Symbol f, ExpList args, Level from) {
-    return new Ex(CallExp(f, args, from));
-  }
-  public Exp FunExp(Level f, ExpList args, Level from) {
-    return new Ex(CallExp(f, args, from));
-  }
-  public Exp ProcExp(Symbol f, ExpList args, Level from) {
-    return new Nx(UEXP(CallExp(f, args, from)));
-  }
-  public Exp ProcExp(Level f, ExpList args, Level from) {
-    return new Nx(UEXP(CallExp(f, args, from)));
-  }
-
-  public Exp OpExp(int op, Exp left, Exp right) {
-    return Error();
-  }
+  public Exp FunExp(Symbol f, ExpList args, Level from) { return new Ex(CallExp(f, args, from)); }
+  public Exp FunExp(Level f, ExpList args, Level from) { return new Ex(CallExp(f, args, from)); }
+  public Exp ProcExp(Symbol f, ExpList args, Level from) { return new Nx(UEXP(CallExp(f, args, from)));}
+  public Exp ProcExp(Level f, ExpList args, Level from) { return new Nx(UEXP(CallExp(f, args, from))); }
+  public Exp OpExp(int op, Exp left, Exp right) { return Error(); }
 
   public Exp StrOpExp(int op, Exp left, Exp right) {
     return Error();
   }
 
-  public Exp RecordExp(ExpList init) {
-    return Error();
+  public Exp RecordExp(ExpList init)
+  {
+    int expSize = 0;
+    for(Translate.ExpList exp = init; exp != null; exp = exp.tail) expSize++;
+
+    Temp temporary = new Temp();
+    return new Ex(ESEQ(SEQ(MOVE(TEMP(temporary), frame.externalCall("allocRecord", ExpList(CONST(expSize)))), initRecord(temporary, 0, init, frame.wordSize())), TEMP(temporary)));
   }
 
-  public Exp SeqExp(ExpList e) {
-    return Error();
+  public Exp SeqExp(ExpList e) 
+  {
+    if (e != null)
+    {
+      Stm stm = null;
+      for(; e.tail != null; e = e.tail) stm = SEQ(stm, e.head.unNx());
+
+      Exp retVal = e.head.unEx();
+      if(retVal != null) return new Ex(ESEQ(stm, retVal));
+      else return new Nx(SEQ(stm, e.head.unNx()));
+    }
+    else return new Nx(null);
   }
 
   public Exp AssignExp(Exp lhs, Exp rhs) 
@@ -167,8 +164,9 @@ public class Translate
     return new Nx(MOVE(lhs.unEx(), rhs.unEx()));
   }
 
-  public Exp IfExp(Exp cc, Exp aa, Exp bb) {
-    return Error();
+  public Exp IfExp(Exp cc, Exp aa, Exp bb) 
+  {
+    return new IfThenElseExp(cc, aa, bb);
   }
 
   public Exp WhileExp(Exp test, Exp body, Label done) 
@@ -191,7 +189,9 @@ public class Translate
 
   public Exp ArrayExp(Exp size, Exp init) 
   {
-    return Error();
+    Ex arrayEx;
+    arrayEx = new Ex(frame.externalCall("initArray", ExpList(size.unEx(), ExpList(init.unEx()))));
+    return arrayEx;
   }
 
   public Exp VarDec(Access a, Exp init) {
@@ -202,7 +202,8 @@ public class Translate
     return new Nx(null);
   }
 
-  public Exp FunctionDec() {
+  public Exp FunctionDec() 
+  {
     return new Nx(null);
   }
 }

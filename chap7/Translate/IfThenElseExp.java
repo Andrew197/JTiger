@@ -76,7 +76,7 @@ class IfThenElseExp extends Exp
   {
     Stm aStm, bStm;
 
-    aStm = a.unNX();
+    aStm = a.unNx();
     bStm = b.unNx();
 
     if (aStm == null) t = join;
