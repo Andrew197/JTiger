@@ -6,11 +6,47 @@ import Tree.CJUMP;
 import Temp.Temp;
 import Temp.Label;
 
+import Absyn.OpExp;
+import Frame.*;
+import Tree.*;
+import java.util.Hashtable;
+
 public class Translate 
 {
   public Frame.Frame frame;
   public Translate(Frame.Frame f) { frame = f; }
   private Frag frags;
+
+  //Holy One Liners, batman!
+  public Frag getResult() { return frags; }
+  private static Tree.Exp CONST(int value)   { return new Tree.CONST(value); }
+  private static Tree.Exp NAME(Label label)  { return new Tree.NAME(label);  }
+  private static Tree.Exp TEMP(Temp temp)    { return new Tree.TEMP(temp);   }
+  private static Tree.Exp MEM(Tree.Exp exp)  { return new Tree.MEM(exp);     }
+  private static Tree.Stm UEXP(Tree.Exp exp) { return new Tree.UEXP(exp);    }
+  private static Tree.Stm JUMP(Label target) { return new Tree.JUMP(target); }
+  private static Tree.Stm LABEL(Label label) { return new Tree.LABEL(label); }
+  
+  public  Exp NilExp()                                    { return new Ex(CONST(0)); }
+  public  Exp IntExp(int value)                           { return new Ex(CONST(value)); }
+  public  Exp AssignExp(Exp lhs, Exp rhs)                 { return new Nx(MOVE(lhs.unEx(), rhs.unEx())); }
+  public  Exp BreakExp(Label done)                        { return new Nx(JUMP(done)); }
+  public  Exp IfExp(Exp cc, Exp aa, Exp bb)               { return new IfThenElseExp(cc, aa, bb); }
+  public  Exp TypeDec()                                   { return new Nx(null); }
+  public  Exp FunctionDec()                               { return new Nx(null); }
+  public  Exp Error()                                     { return new Ex(CONST(0)); }
+  public  Exp FunExp(Symbol f, ExpList args, Level from)  { return new Ex(CallExp(f, args, from)); }
+  public  Exp FunExp(Level f, ExpList args, Level from)   { return new Ex(CallExp(f, args, from)); }
+  public  Exp ProcExp(Symbol f, ExpList args, Level from) { return new Nx(UEXP(CallExp(f, args, from)));}
+  public  Exp ProcExp(Level f, ExpList args, Level from)  { return new Nx(UEXP(CallExp(f, args, from))); }
+  private Exp CallExp(Symbol f, ExpList args, Level from) { return frame.externalCall(f.toString(), ExpList(args)); }
+
+  private static Tree.Exp CALL(Tree.Exp func, Tree.ExpList args)                     { return new Tree.CALL(func, args); }
+  private static Tree.Stm MOVE(Tree.Exp dst, Tree.Exp src)                           { return new Tree.MOVE(dst, src); }
+  private static Tree.Exp BINOP(int binop, Tree.Exp left, Tree.Exp right)            { return new Tree.BINOP(binop, left, right); }
+  private static Tree.Stm CJUMP(int relop, Tree.Exp l, Tree.Exp r, Label t, Label f) { return new Tree.CJUMP(relop, l, r, t, f); }
+  private static Tree.ExpList ExpList(Tree.Exp head, Tree.ExpList tail)              { return new Tree.ExpList(head, tail); }
+  private static Tree.ExpList ExpList(Tree.Exp head)                                 { return ExpList(head, null); }
 
   public void procEntryExit(Level level, Exp body) 
   {
@@ -25,25 +61,12 @@ public class Translate
     frag.next = frags;
     frags = frag;
   }
-
-  public Frag getResult() { return frags; }
-  private static Tree.Exp CONST(int value) { return new Tree.CONST(value); }
-  private static Tree.Exp NAME(Label label) { return new Tree.NAME(label); }
-  private static Tree.Exp TEMP(Temp temp) { return new Tree.TEMP(temp); }
-  private static Tree.Exp BINOP(int binop, Tree.Exp left, Tree.Exp right) { return new Tree.BINOP(binop, left, right); }
-  private static Tree.Exp MEM(Tree.Exp exp) { return new Tree.MEM(exp); }
-  private static Tree.Exp CALL(Tree.Exp func, Tree.ExpList args) { return new Tree.CALL(func, args); }
   
   private static Tree.Exp ESEQ(Tree.Stm stm, Tree.Exp exp) 
   {
     if (stm == null) return exp;
     else             return new Tree.ESEQ(stm, exp);
   }
-
-  private static Tree.Stm MOVE(Tree.Exp dst, Tree.Exp src) { return new Tree.MOVE(dst, src); }
-  private static Tree.Stm UEXP(Tree.Exp exp) { return new Tree.UEXP(exp); }
-  private static Tree.Stm JUMP(Label target) { return new Tree.JUMP(target); }
-  private static Tree.Stm CJUMP(int relop, Tree.Exp l, Tree.Exp r, Label t, Label f) { return new Tree.CJUMP(relop, l, r, t, f); }
 
   private static Tree.Stm SEQ(Tree.Stm left, Tree.Stm right) 
   {
@@ -52,25 +75,19 @@ public class Translate
     else                         return new Tree.SEQ(left, right);
   }
 
-  private static Tree.Stm LABEL(Label label) { return new Tree.LABEL(label); }
-  private static Tree.ExpList ExpList(Tree.Exp head, Tree.ExpList tail) { return new Tree.ExpList(head, tail); }
-  private static Tree.ExpList ExpList(Tree.Exp head) { return ExpList(head, null); }
   private static Tree.ExpList ExpList(ExpList exp) 
   {
     if (exp == null) return null;
     else             return ExpList(exp.head.unEx(), ExpList(exp.tail));
   }
 
-  public Exp NilExp() { return new Ex(CONST(0)); }
-
-
-  public Exp IntExp(int value) { return new Ex(CONST(value)); }
-
   private java.util.Hashtable strings = new java.util.Hashtable();
-  public Exp StringExp(String lit) {
+  public Exp StringExp(String lit) 
+  {
     String u = lit.intern();
     Label lab = (Label)strings.get(u);
-    if (lab == null) {
+    if (lab == null) 
+    {
       lab = new Label();
       strings.put(u, lab);
       DataFrag frag = new DataFrag(frame.string(lab, u));
@@ -80,11 +97,6 @@ public class Translate
     return new Ex(NAME(lab));
   }
 
-  public Exp FunExp(Symbol f, ExpList args, Level from) { return new Ex(CallExp(f, args, from)); }
-  public Exp FunExp(Level f, ExpList args, Level from) { return new Ex(CallExp(f, args, from)); }
-  public Exp ProcExp(Symbol f, ExpList args, Level from) { return new Nx(UEXP(CallExp(f, args, from)));}
-  public Exp ProcExp(Level f, ExpList args, Level from) { return new Nx(UEXP(CallExp(f, args, from))); }
-  
   public Exp OpExp(int op, Exp left, Exp right) 
   {
     switch(op)
@@ -101,8 +113,6 @@ public class Translate
       case 9: return new RelCx(5,    left.unEx(), right.unEx());
     }
   }
-
-  private Tree.Exp CallExp(Symbol f, ExpList args, Level from) { return frame.externalCall(f.toString(), ExpList(args)); }
 
   private Stm recordExp2(Temp temporary, Translate.ExpList recExp, int wordSize)
   {
@@ -133,9 +143,6 @@ public class Translate
     else return new Nx(null);
   }
 
-  public Exp AssignExp(Exp lhs, Exp rhs) { return new Nx(MOVE(lhs.unEx(), rhs.unEx())); }
-  public Exp IfExp(Exp cc, Exp aa, Exp bb) { return new IfThenElseExp(cc, aa, bb); }
-
   public Exp WhileExp(Exp test, Exp body, Label done) 
   {
     Label lab1 = new Label();
@@ -143,8 +150,6 @@ public class Translate
     Nx retVal = new Nx(SEQ(SEQ(SEQ(LABEL(lab1), test.unCx(lab2, done)), SEQ(SEQ(LABEL(lab2), body.unNx()), JUMP(lab1))), LABEL(done)));  
     return retVal;
   }
-
-  public Exp BreakExp(Label done) { return new Nx(JUMP(done)); }
 
   public Exp ArrayExp(Exp size, Exp init) 
   {
@@ -160,10 +165,6 @@ public class Translate
     return vDec;
   }
 
-  public Exp TypeDec() { return new Nx(null); }
-  public Exp FunctionDec() { return new Nx(null); }
-  public Exp Error() { return new Ex(CONST(0)); }
-  
   public Exp SimpleVar(Access access, Level level) 
   {
     Exp framePtr = TEMP(level.frame.FP());
@@ -188,7 +189,6 @@ public class Translate
 
     Label lab1 = new Label();
     Label lab2 = new Label();
-    
 
     //temporaries
     Temp t1 = new Temp();
@@ -212,17 +212,46 @@ public class Translate
     return retVal;
   }
 
-  //TODO: ALL FUNCS BELOW
-
   public Exp FieldVar(Exp record, int index) 
   {
-    return Error();
+    //adjust the index first
+    index = index * frame.wordSize();
+
+    //handle the good and bad ptrs
+    Label badPtr = frame.badPtr();
+    Label goodPtr = new Label();
+
+    //new temporary
+    Temp temporary = new Temp();
+
+    //return it!
+    Ex retVal;
+    retVal = new Ex(ESEQ(SEQ(MOVE(TEMP(temporary), record.unEx()), SEQ(CJUMP(0, TEMP(temporary), CONST(0), badPtr, goodPtr), LABEL(goodPtr))), MEM(BINOP(0, TEMP(temporary), CONST(index)))));
+    return retVal;
   }
 
-  public Exp StrOpExp(int op, Exp left, Exp right) {
-    return Error();
+  public Exp StrOpExp(int op, Exp left, Exp right) 
+  {
+    Exp cmp = frame.externalCall("strcmp", ExpList(left.unEx(), ExpList(right.unEx())));
+    switch(op)
+    {
+      case 4: return new RelCx(0, cmp, CONST(0));
+      case 5: return new RelCx(1, cmp, CONST(0));
+      case 6: return new RelCx(2, cmp, CONST(0));
+      case 7: return new RelCx(4, cmp, CONST(0));
+      case 8: return new RelCx(3, cmp, CONST(0));
+      case 9: return new RelCx(5, cmp, CONST(0));
+    }
+    throw new Error("Str Op Exp Error!!");
   }
 
-  public Exp LetExp(ExpList lets, Exp body) {
-    return Error();
+  public Exp LetExp(ExpList lets, Exp body) 
+  {
+    Stm newStm = null;
+    for(Translate.ExpList expList = lets; expList != null; expList = expList.tail) stm = SEQ(newStm, expList.head.unNx());
+
+    Exp result = body.unEx();
+    if(result != null) return new Ex(ESEQ(stm, result)); 
+    else               return new Nx(SEQ(stm, body.unNx()));
   }
+}
