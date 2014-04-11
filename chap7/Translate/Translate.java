@@ -61,23 +61,6 @@ public class Translate
     else             return ExpList(exp.head.unEx(), ExpList(exp.tail));
   }
 
-  public Exp Error() {
-    return new Ex(CONST(0));
-  }
-
-  public Exp SimpleVar(Access access, Level level) {
-    return Error();
-  }
-
-  public Exp FieldVar(Exp record, int index) 
-  {
-    return Error();
-  }
-
-  public Exp SubscriptVar(Exp array, Exp index) {
-    return Error();
-  }
-
   public Exp NilExp() { return new Ex(CONST(0)); }
 
 
@@ -95,13 +78,6 @@ public class Translate
       frags = frag;
     }
     return new Ex(NAME(lab));
-  }
-
-  private Tree.Exp CallExp(Symbol f, ExpList args, Level from) {
-    return frame.externalCall(f.toString(), ExpList(args));
-  }
-  private Tree.Exp CallExp(Level f, ExpList args, Level from) {
-    throw new Error("Translate.CallExp unimplemented");
   }
 
   public Exp FunExp(Symbol f, ExpList args, Level from) { return new Ex(CallExp(f, args, from)); }
@@ -126,9 +102,7 @@ public class Translate
     }
   }
 
-  public Exp StrOpExp(int op, Exp left, Exp right) {
-    return Error();
-  }
+  private Tree.Exp CallExp(Symbol f, ExpList args, Level from) { return frame.externalCall(f.toString(), ExpList(args)); }
 
   public Exp RecordExp(ExpList init)
   {
@@ -164,15 +138,7 @@ public class Translate
     return retVal;
   }
 
-  public Exp ForExp(Access i, Exp lo, Exp hi, Exp body, Label done) {
-    return Error();
-  }
-
   public Exp BreakExp(Label done) { return new Nx(JUMP(done)); }
-
-  public Exp LetExp(ExpList lets, Exp body) {
-    return Error();
-  }
 
   public Exp ArrayExp(Exp size, Exp init) 
   {
@@ -188,12 +154,40 @@ public class Translate
     return vDec;
   }
 
-  public Exp TypeDec() {
-    return new Nx(null);
+  public Exp TypeDec() { return new Nx(null); }
+  public Exp FunctionDec() { return new Nx(null); }
+  public Exp Error() { return new Ex(CONST(0)); }
+  
+  public Exp SimpleVar(Access access, Level level) 
+  {
+    Exp framePtr = TEMP(level.frame.FP());
+    for(Level l = level; l != access.home; l = l.parent) framePtr = l.frame.formals.head.exp(framePtr);
+    return new Ex(access.acc.exp(framePtr));
   }
 
-  public Exp FunctionDec() 
+  //TODO: ALL FUNCS BELOW
+
+  public Exp FieldVar(Exp record, int index) 
   {
-    return new Nx(null);
+    return Error();
   }
-}
+
+  public Exp SubscriptVar(Exp array, Exp index) {
+    return Error();
+  }
+
+  private Tree.Exp CallExp(Level f, ExpList args, Level from) {
+    throw new Error("Translate.CallExp unimplemented");
+  }
+
+  public Exp StrOpExp(int op, Exp left, Exp right) {
+    return Error();
+  }
+
+  public Exp ForExp(Access i, Exp lo, Exp hi, Exp body, Label done) {
+    return Error();
+  }
+
+  public Exp LetExp(ExpList lets, Exp body) {
+    return Error();
+  }
