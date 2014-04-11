@@ -17,6 +17,17 @@ public class Translate
   public Translate(Frame.Frame f) { frame = f; }
   private Frag frags;
 
+  //debug tools
+  private void debugPrint(int depth, Object sender, String message) 
+  {
+    if (debug) 
+    {
+      if (sender == null)                  System.out.println(": null -> " + message);
+      if (!(sender instanceof Translate))  System.out.println(": " + sender.getClass().toString().substring(6) + "-> " + message);
+      else                                 System.out.println("\n*************** " + message.toUpperCase() + " ***************");
+    }
+  }
+
   //Holy One Liners, batman!
   public Frag getResult() { return frags; }
   private static Tree.Exp CONST(int value)   { return new Tree.CONST(value); }
