@@ -104,13 +104,19 @@ public class Translate
 
   private Tree.Exp CallExp(Symbol f, ExpList args, Level from) { return frame.externalCall(f.toString(), ExpList(args)); }
 
+  private Stm recordExp2(Temp temporary, Translate.ExpList recExp, int wordSize)
+  {
+      if(init != null)  return SEQ(MOVE(MEM(BINOP(0, TEMP(temporary), CONST(i))), recExp.head.unEx()), recordExp2(temporary, wordSize, recExp.tail, wordSize));
+      else              return null;        
+  }
+
   public Exp RecordExp(ExpList init)
   {
     int expSize = 0;
     for(Translate.ExpList exp = init; exp != null; exp = exp.tail) expSize++;
 
     Temp temporary = new Temp();
-    return new Ex(ESEQ(SEQ(MOVE(TEMP(temporary), frame.externalCall("allocRecord", ExpList(CONST(expSize)))), initRecord(temporary, 0, init, frame.wordSize())), TEMP(temporary)));
+    return new Ex(ESEQ(SEQ(MOVE(TEMP(temporary), frame.externalCall("allocRecord", ExpList(CONST(expSize)))), recordExp2(temporary, init, frame.wordSize())), TEMP(temporary)));
   }
 
   public Exp SeqExp(ExpList e) 
@@ -165,6 +171,47 @@ public class Translate
     return new Ex(access.acc.exp(framePtr));
   }
 
+  private Tree.Exp CallExp(Level f, ExpList args, Level from) 
+  {
+    Exp framePtr = TEMP(from.frame.FP());
+    if(f.parent != from)
+    {
+      for(Level l = from; l != f.parent; l = l.parent) framePtr = l.frame.formals.head.exp(framePtr);
+    }
+    return CALL(NAME(f.frame.name), ExpList(framePtr, ExpList(args)));
+  }
+
+  public Exp SubscriptVar(Exp array, Exp index) 
+  {
+    int wordSize = frame.wordSize();
+    Label badFrame = frame.badSub();
+
+    Label lab1 = new Label();
+    Label lab2 = new Label();
+    
+
+    //temporaries
+    Temp t1 = new Temp();
+    Temp t2 = new Temp();
+
+    //return the IC
+    Ex retCode;
+    retCode = new Ex(ESEQ(SEQ(MOVE(TEMP(t1), array.unEx()), SEQ(MOVE(TEMP(t2), index.unEx()), SEQ(CJUMP(2, TEMP(t2), CONST(0), badFrame, lab2), SEQ(LABEL(lab2), SEQ(CJUMP(3, TEMP(t2), MEM(BINOP(0, TEMP(t1), CONST(-wordSize))), badFrame, lab1), LABEL(lab1)))))), MEM(BINOP(0, TEMP(t1), BINOP(2, TEMP(t2), CONST(wordSize))))));
+    return retCode;
+  }
+
+  public Exp ForExp(Access i, Exp lo, Exp hi, Exp body, Label done) 
+  {
+    Temp temporary = new Temp();
+    Temp framePtr = i.home.frame.FP();
+    Label b = new Label();
+    Label inc = new Label();
+    
+    Nx retVal;
+    retVal = new Nx(SEQ(SEQ(SEQ(SEQ(MOVE(i.acc.exp(TEMP(framePtr)), lo.unEx()), MOVE(TEMP(temporary), hi.unEx())), CJUMP(4, i.acc.exp(TEMP(framePtr)), TEMP(temporary), b, done)), SEQ(SEQ(SEQ(LABEL(b), body.unNx()), CJUMP(2, i.acc.exp(TEMP(framePtr)), TEMP(temporary), inc, done)), SEQ(SEQ(LABEL(inc), MOVE(i.acc.exp(TEMP(framePtr)), BINOP(0, i.acc.exp(TEMP(framePtr)), CONST(1)))), JUMP(b)))), LABEL(done)));
+    return retVal;
+  }
+
   //TODO: ALL FUNCS BELOW
 
   public Exp FieldVar(Exp record, int index) 
@@ -172,19 +219,7 @@ public class Translate
     return Error();
   }
 
-  public Exp SubscriptVar(Exp array, Exp index) {
-    return Error();
-  }
-
-  private Tree.Exp CallExp(Level f, ExpList args, Level from) {
-    throw new Error("Translate.CallExp unimplemented");
-  }
-
   public Exp StrOpExp(int op, Exp left, Exp right) {
-    return Error();
-  }
-
-  public Exp ForExp(Access i, Exp lo, Exp hi, Exp body, Label done) {
     return Error();
   }
 
