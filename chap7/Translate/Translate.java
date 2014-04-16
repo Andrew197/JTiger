@@ -17,6 +17,12 @@ public class Translate {
     frame = f;
   }
   private Frag frags;
+
+    /**
+   * This method is the point of entry to begin the process of translating. We take out the data frame, and start by unEx()ing the whole body. This returns a
+   * Tree.Exp. If that Exp is not null, then the bodyStm will simply move the bodyExp into temporary memory. Not sure why it will do this, but my guess is
+   * that we'll find out soon enough.
+   */
   public void procEntryExit(Level level, Exp body) {
     Frame.Frame myframe = level.frame;
     Tree.Exp bodyExp = body.unEx();
@@ -233,10 +239,24 @@ public Exp OpExp(int op, Exp left, Exp right) {
   }
 
   public Exp StrOpExp(int op, Exp left, Exp right) {
-    return Error();
+Tree.Exp cmp = frame.externalCall("strcmp", ExpList(left.unEx(), ExpList(right.unEx())));
+    switch (op) {
+      case 4:
+        return new RelCx(0, cmp, CONST(0));
+      case 5:
+        return new RelCx(1, cmp, CONST(0));
+      case 6:
+        return new RelCx(2, cmp, CONST(0));
+      case 7:
+        return new RelCx(4, cmp, CONST(0));
+      case 8:
+        return new RelCx(3, cmp, CONST(0));
+      case 9:
+        return new RelCx(5, cmp, CONST(0));
+    }
+    throw new Error("Str Op Exp Error!!");
   }
 
-    //TODO incorporate this function
   private Tree.Stm RecordExpRest(Temp temporary, ExpList recExp, int wordSize) {
     if (recExp != null)
       return SEQ(MOVE(MEM(BINOP(0, TEMP(temporary), CONST(0))), recExp.head.unEx()),
@@ -285,6 +305,10 @@ public Exp OpExp(int op, Exp left, Exp right) {
     Nx moveX = new Nx(MOVE(l, r));
     return moveX;
   }
+
+// From here, we just launch a new IfThenElseExp. This is talked about heavily in
+  // the book, and it's the only other class file we do for this project.
+
 
   public Exp IfExp(Exp cc, Exp aa, Exp bb) {
     return new IfThenElseExp(cc, aa, bb);
