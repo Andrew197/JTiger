@@ -1,0 +1,4 @@
+Andrew Pinion
+Mitchell Mason
+
+All test cases work correctly and the same as the reference, except for merge, and only the last temporary. It shows up as t5 instead of t6, but this doesnt seem to be an issue in any of the other tests.
