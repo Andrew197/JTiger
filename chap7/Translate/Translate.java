@@ -6,16 +6,12 @@ import Tree.CJUMP;
 import Temp.Temp;
 import Temp.Label;
 
-import Absyn.OpExp;
-import Frame.*;
-import Tree.*;
-import java.util.Hashtable;
-
 public class Translate 
 {
-  public Frame.Frame frame;
-  public Translate(Frame.Frame f) { frame = f; }
+  public Frame frame;
+  public Translate(Frame f) { frame = f; }
   private Frag frags;
+  private boolean debug = false;
 
   //debug tools
   private void debugPrint(int depth, Object sender, String message) 
@@ -123,16 +119,16 @@ public class Translate
     }
   }
 
-  private Stm recordExp2(Temp temporary, Translate.ExpList recExp, int wordSize)
+  private Stm recordExp2(Temp temporary, ExpList recExp, int wordSize)
   {
-      if(init != null)  return SEQ(MOVE(MEM(BINOP(0, TEMP(temporary), CONST(i))), recExp.head.unEx()), recordExp2(temporary, wordSize, recExp.tail, wordSize));
+      if(recExp != null)  return SEQ(MOVE(MEM(BINOP(0, TEMP(temporary), CONST(0))), recExp.head.unEx()), recordExp2(temporary, wordSize, recExp.tail, wordSize));
       else              return null;        
   }
 
   public Exp RecordExp(ExpList init)
   {
     int expSize = 0;
-    for(Translate.ExpList exp = init; exp != null; exp = exp.tail) expSize++;
+    for(ExpList exp = init; exp != null; exp = exp.tail) expSize++;
 
     Temp temporary = new Temp();
     return new Ex(ESEQ(SEQ(MOVE(TEMP(temporary), frame.externalCall("allocRecord", ExpList(CONST(expSize)))), recordExp2(temporary, init, frame.wordSize())), TEMP(temporary)));
@@ -142,7 +138,7 @@ public class Translate
   {
     if (e != null)
     {
-      Stm stm = null;
+      Tree.Stm stm = null;
       for(; e.tail != null; e = e.tail) stm = SEQ(stm, e.head.unNx());
 
       Exp retVal = e.head.unEx();
@@ -256,11 +252,11 @@ public class Translate
 
   public Exp LetExp(ExpList lets, Exp body) 
   {
-    Stm newStm = null;
-    for(Translate.ExpList expList = lets; expList != null; expList = expList.tail) stm = SEQ(newStm, expList.head.unNx());
+    Tree.Stm newStm = null;
+    for(ExpList expList = lets; expList != null; expList = expList.tail) newStm = SEQ(newStm, expList.head.unNx());
 
     Exp result = body.unEx();
-    if(result != null) return new Ex(ESEQ(stm, result)); 
-    else               return new Nx(SEQ(stm, body.unNx()));
+    if(result != null) return new Ex(ESEQ(newStm, result)); 
+    else               return new Nx(SEQ(newStm, body.unNx()));
   }
 }

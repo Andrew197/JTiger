@@ -1,6 +1,5 @@
 package Translate;
 
-import Tree.*;
 import Temp.Temp;
 import Temp.Label;
 
@@ -11,6 +10,7 @@ class IfThenElseExp extends Exp
   Label t = new Label();
   Label f = new Label();
   Label join = new Label();
+  private boolean debug = false;
 
   //debug tools
   private void debugPrint(int depth, Object sender, String message) 
@@ -33,10 +33,10 @@ class IfThenElseExp extends Exp
 
   Tree.Stm fixJump(Tree.Stm stm, int tb)
   {
-    JUMP jump = (JUMP)stm;
-    if(jump.exp instanceof NAME)
+    Tree.JUMP jump = (Tree.JUMP)stm;
+    if(jump.exp instanceof Tree.NAME)
     {
-      NAME name = (NAME)jump.exp;
+      Tree.NAME name = (Tree.NAME)jump.exp;
       stm = null;
       if (tb == 1) t = name.label;
       else         f = name.label;
@@ -69,32 +69,32 @@ class IfThenElseExp extends Exp
     {
       //nothing's null, we're good here.
       Temp temporary;
-      ESEQ retVal;
-      retVal = new ESEQ(new SEQ(new SEQ(cond.unCx(t, f), new SEQ(new SEQ(new LABEL(t), new SEQ(new MOVE(new TEMP(r), aExp), new JUMP(join))), new SEQ(new LABEL(f), new SEQ(new MOVE(new TEMP(r), bExp), new JUMP(join))))), new LABEL(join)), new TEMP(r));
+      Tree.ESEQ retVal;
+      retVal = new Tree.ESEQ(new Tree.SEQ(new Tree.SEQ(cond.unCx(t, f), new Tree.SEQ(new Tree.SEQ(new Tree.LABEL(t), new Tree.SEQ(new Tree.MOVE(new Tree.TEMP(temporary), aExp), new Tree.JUMP(join))), new Tree.SEQ(new Tree.LABEL(f), new Tree.SEQ(new Tree.MOVE(new Tree.TEMP(temporary), bExp), new Tree.JUMP(join))))), new Tree.LABEL(join)), new Tree.TEMP(temporary));
       return retVal;
     }
   }
 
   Tree.Stm unNx() 
   {
-    Stm aStm, bStm;
+    Tree.Stm aStm, bStm;
 
     aStm = a.unNx();
     bStm = b.unNx();
 
     if (aStm == null) t = join;
-    else aStm = new SEQ(new SEQ(new LABEL(t), aStm), new JUMP(join));
+    else aStm = new Tree.SEQ(new Tree.SEQ(new Tree.LABEL(t), aStm), new Tree.JUMP(join));
 
     if  (bStm == null) f = join;
-    else bStm = new SEQ(new SEQ(new LABEL(f), bStm), new JUMP(join));
+    else bStm = new Tree.SEQ(new Tree.SEQ(new Tree.LABEL(f), bStm), new Tree.JUMP(join));
   
     if(aStm == null && bStm == null) return cond.unNx();
     else
     {
-      Stm stm = cond.unCx(t, f);
-      if(aStm == null)       return new SEQ(new SEQ(stm, bStm), new LABEL(join));
-      else if(bStm == null)  return new SEQ(new SEQ(stm, aStm), new LABEL(join));
-      else                   return new SEQ(new SEQ(stm, new SEQ(aStm, bStm)), new LABEL(join));
+      Tree.Stm stm = cond.unCx(t, f);
+      if(aStm == null)       return new Tree.SEQ(new Tree.SEQ(stm, bStm), new Tree.LABEL(join));
+      else if(bStm == null)  return new Tree.SEQ(new Tree.SEQ(stm, aStm), new Tree.LABEL(join));
+      else                   return new Tree.SEQ(new Tree.SEQ(stm, new Tree.SEQ(aStm, bStm)), new Tree.LABEL(join));
     }
   }
 }
